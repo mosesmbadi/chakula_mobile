@@ -1,0 +1,79 @@
+import 'package:flutter/material.dart';
+import '../core/app_colors.dart';
+import 'home/home_screen.dart';
+import 'log/log_screen.dart';
+import 'discover/discover_screen.dart';
+import 'profile/profile_screen.dart';
+
+class MainShell extends StatefulWidget {
+  const MainShell({super.key});
+
+  @override
+  State<MainShell> createState() => _MainShellState();
+}
+
+class _MainShellState extends State<MainShell> {
+  int _selectedIndex = 0;
+
+  final List<Widget> _screens = [
+    const HomeScreen(),
+    const LogScreen(),
+    const DiscoverScreen(),
+    const ProfileScreen(),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: _screens[_selectedIndex],
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          border: Border(
+            top: BorderSide(
+              color: Colors.black.withValues(alpha: 0.05),
+              width: 1,
+            ),
+          ),
+        ),
+        child: BottomNavigationBar(
+          currentIndex: _selectedIndex,
+          onTap: (index) {
+            setState(() {
+              _selectedIndex = index;
+            });
+          },
+          type: BottomNavigationBarType.fixed,
+          backgroundColor: AppColors.background,
+          selectedItemColor: AppColors.accent,
+          unselectedItemColor: AppColors.accent.withValues(alpha: 0.4),
+          showSelectedLabels: true,
+          showUnselectedLabels: true,
+          selectedFontSize: 12,
+          unselectedFontSize: 12,
+          items: [
+            _buildNavItem(0, 'Home'),
+            _buildNavItem(1, 'Log'),
+            _buildNavItem(2, 'Discover'),
+            _buildNavItem(3, 'Profile'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  BottomNavigationBarItem _buildNavItem(int index, String label) {
+    final isSelected = _selectedIndex == index;
+    return BottomNavigationBarItem(
+      icon: Container(
+        margin: const EdgeInsets.only(bottom: 4),
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.accent : AppColors.accent.withValues(alpha: 0.2),
+          borderRadius: BorderRadius.circular(8),
+        ),
+      ),
+      label: label,
+    );
+  }
+}
