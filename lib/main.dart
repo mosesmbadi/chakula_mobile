@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'core/app_colors.dart';
+import 'core/user_provider.dart';
 import 'modules/onboarding/name_screen.dart';
 import 'modules/onboarding/location_screen.dart';
 import 'modules/onboarding/budget_screen.dart';
@@ -9,7 +11,12 @@ import 'modules/main_shell.dart';
 import 'modules/home/suggestion_screen.dart';
 
 void main() {
-  runApp(const ChakulaApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => UserProvider(),
+      child: const ChakulaApp(),
+    ),
+  );
 }
 
 class ChakulaApp extends StatelessWidget {

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../../core/app_colors.dart';
+import '../../core/user_provider.dart';
 
 class NameScreen extends StatefulWidget {
   const NameScreen({super.key});
@@ -91,6 +93,7 @@ class _NameScreenState extends State<NameScreen> {
                   child: ElevatedButton(
                     onPressed: () {
                       if (_nameController.text.isNotEmpty) {
+                        Provider.of<UserProvider>(context, listen: false).setDraftName(_nameController.text);
                         Navigator.pushNamed(context, '/location');
                       }
                     },
