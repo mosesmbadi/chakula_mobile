@@ -1,29 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import '../../core/app_colors.dart';
-import '../../core/user_provider.dart';
+import '../../providers/onboarding_provider.dart';
 
-class BudgetScreen extends StatefulWidget {
+class BudgetScreen extends ConsumerStatefulWidget {
   const BudgetScreen({super.key});
 
   @override
-  State<BudgetScreen> createState() => _BudgetScreenState();
+  ConsumerState<BudgetScreen> createState() => _BudgetScreenState();
 }
 
-class _BudgetScreenState extends State<BudgetScreen> {
+class _BudgetScreenState extends ConsumerState<BudgetScreen> {
   double budget = 250;
   String selectedMealCount = '3 meals a day';
 
   final List<Map<String, String>> mealOptions = [
-    {
-      'title': '3 meals a day',
-      'subtitle': '~KSh 83 per meal',
-    },
-    {
-      'title': '2 meals a day',
-      'subtitle': '~KSh 125 per meal',
-    },
+    {'title': '3 meals a day', 'subtitle': '~KSh 83 per meal'},
+    {'title': '2 meals a day', 'subtitle': '~KSh 125 per meal'},
   ];
 
   @override
@@ -37,7 +31,6 @@ class _BudgetScreenState extends State<BudgetScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 16),
-              // Progress Bar
               Row(
                 children: [
                   Expanded(child: _buildProgressSegment(true)),
@@ -66,7 +59,6 @@ class _BudgetScreenState extends State<BudgetScreen> {
                 ),
               ),
               const SizedBox(height: 48),
-              // Budget Display Card
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
@@ -93,7 +85,6 @@ class _BudgetScreenState extends State<BudgetScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    // Custom Slider
                     SliderTheme(
                       data: SliderTheme.of(context).copyWith(
                         trackHeight: 8,
@@ -108,14 +99,9 @@ class _BudgetScreenState extends State<BudgetScreen> {
                         value: budget,
                         min: 100,
                         max: 1000,
-                        onChanged: (value) {
-                          setState(() {
-                            budget = value;
-                          });
-                        },
+                        onChanged: (value) => setState(() => budget = value),
                       ),
                     ),
-                    // Visual progress indicator on top of slider to match design
                     Container(
                       height: 8,
                       width: double.infinity,
@@ -141,16 +127,12 @@ class _BudgetScreenState extends State<BudgetScreen> {
               Expanded(
                 child: ListView.separated(
                   itemCount: mealOptions.length,
-                  separatorBuilder: (context, index) => const SizedBox(height: 16),
+                  separatorBuilder: (_, _) => const SizedBox(height: 16),
                   itemBuilder: (context, index) {
                     final item = mealOptions[index];
                     final isSelected = selectedMealCount == item['title'];
                     return GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          selectedMealCount = item['title']!;
-                        });
-                      },
+                      onTap: () => setState(() => selectedMealCount = item['title']!),
                       child: Container(
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
@@ -160,7 +142,6 @@ class _BudgetScreenState extends State<BudgetScreen> {
                             color: isSelected
                                 ? AppColors.onboardingCardBorder
                                 : Colors.white.withValues(alpha: 0.1),
-                            width: 1,
                           ),
                         ),
                         child: Row(
@@ -169,22 +150,16 @@ class _BudgetScreenState extends State<BudgetScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    item['title']!,
-                                    style: GoogleFonts.inter(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.white,
-                                    ),
-                                  ),
+                                  Text(item['title']!,
+                                      style: GoogleFonts.inter(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.white)),
                                   const SizedBox(height: 4),
-                                  Text(
-                                    item['subtitle']!,
-                                    style: GoogleFonts.inter(
-                                      fontSize: 14,
-                                      color: AppColors.onboardingTextSecondary,
-                                    ),
-                                  ),
+                                  Text(item['subtitle']!,
+                                      style: GoogleFonts.inter(
+                                          fontSize: 14,
+                                          color: AppColors.onboardingTextSecondary)),
                                 ],
                               ),
                             ),
@@ -227,7 +202,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
                   height: 64,
                   child: ElevatedButton(
                     onPressed: () {
-                      Provider.of<UserProvider>(context, listen: false).setDraftBudget(budget.toInt());
+                      ref.read(onboardingProvider.notifier).setBudget(budget.toInt());
                       Navigator.pushNamed(context, '/home');
                     },
                     style: ElevatedButton.styleFrom(
@@ -240,10 +215,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
                     ),
                     child: Text(
                       'Continue',
-                      style: GoogleFonts.inter(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
@@ -259,9 +231,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
     return Container(
       height: 4,
       decoration: BoxDecoration(
-        color: active
-            ? AppColors.onboardingCardBorder
-            : Colors.white.withValues(alpha: 0.1),
+        color: active ? AppColors.onboardingCardBorder : Colors.white.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(2),
       ),
     );

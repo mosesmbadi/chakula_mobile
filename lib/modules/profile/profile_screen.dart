@@ -1,23 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import '../../core/app_colors.dart';
-import '../../core/user_provider.dart';
+import '../../data/models/user.dart';
+import '../../providers/auth_provider.dart';
 import '../auth/register_screen.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final userProvider = context.watch<UserProvider>();
-    final user = userProvider.user;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: userProvider.isAuthenticated
-          ? _buildProfile(context, user!)
-          : _buildAuthPrompt(context),
+      body: switch (authState) {
+        AuthInitializing() => const Center(child: CircularProgressIndicator()),
+        AuthAuthenticated(:final user) => _buildProfile(context, ref, user),
+        AuthUnauthenticated() => _buildAuthPrompt(context),
+      },
     );
   }
 
@@ -34,11 +36,7 @@ class ProfileScreen extends StatelessWidget {
                 color: AppColors.primary.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
-                Icons.person_outline,
-                size: 64,
-                color: AppColors.primary,
-              ),
+              child: const Icon(Icons.person_outline, size: 64, color: AppColors.primary),
             ),
             const SizedBox(height: 32),
             Text(
@@ -53,35 +51,25 @@ class ProfileScreen extends StatelessWidget {
             Text(
               'Register today and never lose your data. Track your meals and get personalized suggestions.',
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
-                fontSize: 16,
-                color: AppColors.textSecondary,
-              ),
+              style: GoogleFonts.inter(fontSize: 16, color: AppColors.textSecondary),
             ),
             const SizedBox(height: 48),
             SizedBox(
               width: double.infinity,
               height: 64,
               child: ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const RegisterScreen()),
-                  );
-                },
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                   elevation: 0,
                 ),
                 child: Text(
                   'Register Now',
-                  style: GoogleFonts.inter(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ),
             ),
@@ -91,7 +79,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProfile(BuildContext context, dynamic user) {
+  Widget _buildProfile(BuildContext context, WidgetRef ref, User user) {
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
@@ -110,7 +98,7 @@ class ProfileScreen extends StatelessWidget {
                   ),
                 ),
                 IconButton(
-                  onPressed: () => context.read<UserProvider>().logout(),
+                  onPressed: () => ref.read(authProvider.notifier).logout(),
                   icon: const Icon(Icons.logout, color: Colors.red),
                 ),
               ],
@@ -122,9 +110,7 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 16),
             Wrap(
               spacing: 8,
-              children: (user.dietaryGoals as List<String>)
-                  .map((goal) => _buildGoalChip(goal))
-                  .toList(),
+              children: user.dietaryGoals.map(_buildGoalChip).toList(),
             ),
             const SizedBox(height: 32),
             _buildSectionTitle('Settings'),
@@ -138,7 +124,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProfileInfoCard(dynamic user) {
+  Widget _buildProfileInfoCard(User user) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -151,10 +137,7 @@ class ProfileScreen extends StatelessWidget {
           Container(
             width: 64,
             height: 64,
-            decoration: const BoxDecoration(
-              color: AppColors.primary,
-              shape: BoxShape.circle,
-            ),
+            decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
             child: Center(
               child: Text(
                 user.name.substring(0, 1).toUpperCase(),
@@ -182,10 +165,7 @@ class ProfileScreen extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   user.email,
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    color: AppColors.textSecondary,
-                  ),
+                  style: GoogleFonts.inter(fontSize: 14, color: AppColors.textSecondary),
                 ),
               ],
             ),
@@ -236,10 +216,7 @@ class ProfileScreen extends StatelessWidget {
           Expanded(
             child: Text(
               title,
-              style: GoogleFonts.inter(
-                fontSize: 16,
-                color: AppColors.textPrimary,
-              ),
+              style: GoogleFonts.inter(fontSize: 16, color: AppColors.textPrimary),
             ),
           ),
           Icon(Icons.chevron_right, color: AppColors.textSecondary, size: 20),

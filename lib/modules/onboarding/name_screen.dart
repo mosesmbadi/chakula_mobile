@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import '../../core/app_colors.dart';
-import '../../core/user_provider.dart';
+import '../../providers/onboarding_provider.dart';
 
-class NameScreen extends StatefulWidget {
+class NameScreen extends ConsumerStatefulWidget {
   const NameScreen({super.key});
 
   @override
-  State<NameScreen> createState() => _NameScreenState();
+  ConsumerState<NameScreen> createState() => _NameScreenState();
 }
 
-class _NameScreenState extends State<NameScreen> {
+class _NameScreenState extends ConsumerState<NameScreen> {
   final TextEditingController _nameController = TextEditingController();
 
   @override
@@ -31,7 +31,6 @@ class _NameScreenState extends State<NameScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 16),
-              // Progress Bar
               Row(
                 children: [
                   Expanded(child: _buildProgressSegment(true)),
@@ -60,7 +59,6 @@ class _NameScreenState extends State<NameScreen> {
                 ),
               ),
               const SizedBox(height: 48),
-              // Name Input Field
               TextField(
                 controller: _nameController,
                 autofocus: true,
@@ -93,7 +91,7 @@ class _NameScreenState extends State<NameScreen> {
                   child: ElevatedButton(
                     onPressed: () {
                       if (_nameController.text.isNotEmpty) {
-                        Provider.of<UserProvider>(context, listen: false).setDraftName(_nameController.text);
+                        ref.read(onboardingProvider.notifier).setName(_nameController.text);
                         Navigator.pushNamed(context, '/location');
                       }
                     },

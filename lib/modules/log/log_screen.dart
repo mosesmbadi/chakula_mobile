@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import '../../core/app_colors.dart';
-import '../../core/user_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../auth/register_screen.dart';
 
-class LogScreen extends StatelessWidget {
+class LogScreen extends ConsumerWidget {
   const LogScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final userProvider = context.watch<UserProvider>();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authProvider);
+    final isAuthenticated = authState is AuthAuthenticated;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -38,7 +39,7 @@ class LogScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (!userProvider.isAuthenticated) ...[
+              if (!isAuthenticated) ...[
                 const SizedBox(height: 16),
                 _buildRegisterBanner(context),
               ],
@@ -65,7 +66,6 @@ class LogScreen extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 24),
-              // Nutrition Summary Card
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(24),
@@ -106,9 +106,11 @@ class LogScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              _buildMealEatenRow('Mandazi & Chai', '7:12 am · Breakfast', '340 kcal', AppColors.primary.withValues(alpha: 0.1)),
+              _buildMealEatenRow('Mandazi & Chai', '7:12 am · Breakfast', '340 kcal',
+                  AppColors.primary.withValues(alpha: 0.1)),
               const Divider(height: 1),
-              _buildMealEatenRow('Ugali Mayai + spinach', '1:05 pm · Lunch · customised', '420 kcal', AppColors.vitaminB12.withValues(alpha: 0.1)),
+              _buildMealEatenRow('Ugali Mayai + spinach', '1:05 pm · Lunch · customised',
+                  '420 kcal', AppColors.vitaminB12.withValues(alpha: 0.1)),
             ],
           ),
         ),
@@ -121,13 +123,8 @@ class LogScreen extends StatelessWidget {
       children: [
         SizedBox(
           width: 80,
-          child: Text(
-            label,
-            style: GoogleFonts.inter(
-              fontSize: 14,
-              color: AppColors.textSecondary,
-            ),
-          ),
+          child: Text(label,
+              style: GoogleFonts.inter(fontSize: 14, color: AppColors.textSecondary)),
         ),
         Expanded(
           child: Container(
@@ -140,10 +137,8 @@ class LogScreen extends StatelessWidget {
               alignment: Alignment.centerLeft,
               widthFactor: progress,
               child: Container(
-                decoration: BoxDecoration(
-                  color: color,
-                  borderRadius: BorderRadius.circular(6),
-                ),
+                decoration:
+                    BoxDecoration(color: color, borderRadius: BorderRadius.circular(6)),
               ),
             ),
           ),
@@ -165,7 +160,8 @@ class LogScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMealEatenRow(String title, String subtitle, String calories, Color iconColor) {
+  Widget _buildMealEatenRow(
+      String title, String subtitle, String calories, Color iconColor) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 20.0),
       child: Row(
@@ -173,43 +169,28 @@ class LogScreen extends StatelessWidget {
           Container(
             width: 48,
             height: 48,
-            decoration: BoxDecoration(
-              color: iconColor,
-              borderRadius: BorderRadius.circular(12),
-            ),
+            decoration:
+                BoxDecoration(color: iconColor, borderRadius: BorderRadius.circular(12)),
           ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: GoogleFonts.inter(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
+                Text(title,
+                    style: GoogleFonts.inter(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary)),
                 const SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
+                Text(subtitle,
+                    style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary)),
               ],
             ),
           ),
-          Text(
-            calories,
-            style: GoogleFonts.inter(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: AppColors.accent,
-            ),
-          ),
+          Text(calories,
+              style: GoogleFonts.inter(
+                  fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.accent)),
         ],
       ),
     );
@@ -238,47 +219,28 @@ class LogScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Register today',
-                  style: GoogleFonts.inter(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                ),
-                Text(
-                  'And never lose your data',
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    color: Colors.black.withValues(alpha: 0.7),
-                  ),
-                ),
+                Text('Register today',
+                    style: GoogleFonts.inter(
+                        fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black)),
+                Text('And never lose your data',
+                    style: GoogleFonts.inter(
+                        fontSize: 13, color: Colors.black.withValues(alpha: 0.7))),
               ],
             ),
           ),
           const SizedBox(width: 12),
           ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const RegisterScreen()),
-              );
-            },
+            onPressed: () => Navigator.of(context)
+                .push(MaterialPageRoute(builder: (_) => const RegisterScreen())),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.black,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               elevation: 0,
             ),
-            child: Text(
-              'Join',
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            child: Text('Join',
+                style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
