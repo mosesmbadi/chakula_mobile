@@ -42,7 +42,7 @@ class _NameScreenState extends ConsumerState<NameScreen> {
               ),
               const SizedBox(height: 48),
               Text(
-                "What's your\nname?",
+                "Welcome. What should we call you?",
                 style: GoogleFonts.inter(
                   fontSize: 40,
                   fontWeight: FontWeight.bold,
