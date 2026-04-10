@@ -20,6 +20,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   String _mealType = '';
   bool _isAccepting = false;
+  int _swapIndex = 0;
 
   @override
   void initState() {
@@ -74,23 +75,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Future<void> _acceptDayPlan(Map<String, List<Meal>> allFoods) async {
-    if (!_requireAuth()) return;
-    if (_isAccepting) return;
-    setState(() => _isAccepting = true);
-
-    final error = await ref
-        .read(recommendationsProvider.notifier)
-        .acceptDayPlan(allFoods);
-    if (!mounted) return;
-    setState(() => _isAccepting = false);
-
-    AppToast.show(
-      context,
-      error == null ? "Today's plan accepted!" : 'Could not accept plan. Please try again.',
-      type: error == null ? ToastType.success : ToastType.error,
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -193,7 +177,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               children: _mealTypes.map((type) {
                 final isSelected = _mealType == type;
                 return GestureDetector(
-                  onTap: () => setState(() => _mealType = type),
+                  onTap: () => setState(() {
+                    _mealType = type;
+                    _swapIndex = 0;
+                  }),
                   child: Container(
                     margin: const EdgeInsets.only(right: 8),
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -228,7 +215,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ? _buildErrorCard(error)
                 : currentFoods.isEmpty
                     ? _buildErrorCard('No recommendations found')
-                    : _buildFeaturedCard(currentFoods.first),
+                    : _buildFeaturedCard(
+                        currentFoods,
+                        allFoods ?? {},
+                      ),
         const SizedBox(height: 32),
         Text(
           'MORE OPTIONS',
@@ -259,66 +249,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ],
                     ),
         ),
-        const SizedBox(height: 48),
-        Row(
-          children: [
-            Expanded(
-              flex: 2,
-              child: SizedBox(
-                height: 64,
-                child: ElevatedButton(
-                  onPressed: (isLoading || _isAccepting || allFoods == null)
-                      ? null
-                      : () => _acceptDayPlan(allFoods),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.accent,
-                    foregroundColor: Colors.white,
-                    disabledBackgroundColor: AppColors.accent.withValues(alpha: 0.6),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                    elevation: 0,
-                  ),
-                  child: _isAccepting
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                              color: Colors.white, strokeWidth: 2),
-                        )
-                      : Text(
-                          "Accept today's plan",
-                          style: GoogleFonts.inter(
-                              fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: SizedBox(
-                height: 64,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.pushNamed(context, '/suggestion'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary.withValues(alpha: 0.2),
-                    foregroundColor: AppColors.textPrimary,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                    elevation: 0,
-                  ),
-                  child: Text('Swap',
-                      style: GoogleFonts.inter(
-                          fontSize: 16, fontWeight: FontWeight.bold)),
-                ),
-              ),
-            ),
-          ],
-        ),
         const SizedBox(height: 32),
       ],
     );
   }
 
-  Widget _buildFeaturedCard(Meal food) {
+  Widget _buildFeaturedCard(List<Meal> foods, Map<String, List<Meal>> allFoods) {
+    final food = foods[_swapIndex % foods.length];
     final location = food.commonAt.isNotEmpty ? food.commonAt.first : 'kenya';
+    final canSwap = foods.length > 1;
 
     return Container(
       width: double.infinity,
@@ -377,41 +316,88 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
           const SizedBox(height: 16),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              GestureDetector(
-                onTap: _isAccepting
-                    ? null
-                    : () => _acceptCurrentMeal(
-                          ref.read(recommendationsProvider).value ?? {},
-                        ),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    'Accept this meal',
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
+              Expanded(
+                flex: 2,
+                child: GestureDetector(
+                  onTap: _isAccepting
+                      ? null
+                      : () => _acceptCurrentMeal(allFoods),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Center(
+                      child: _isAccepting
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                  color: Colors.white, strokeWidth: 2),
+                            )
+                          : Text(
+                              'Accept this meal',
+                              style: GoogleFonts.inter(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
                     ),
                   ),
                 ),
               ),
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withValues(alpha: 0.1),
+              if (canSwap) ...[
+                const SizedBox(width: 12),
+                GestureDetector(
+                  onTap: () => setState(() => _swapIndex++),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.swap_horiz, color: Colors.white, size: 18),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Swap',
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ],
           ),
+          if (canSwap) ...[
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(foods.length, (i) {
+                final active = i == _swapIndex % foods.length;
+                return Container(
+                  width: active ? 16 : 6,
+                  height: 6,
+                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                  decoration: BoxDecoration(
+                    color: active
+                        ? Colors.white
+                        : Colors.white.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                );
+              }),
+            ),
+          ],
         ],
       ),
     );
