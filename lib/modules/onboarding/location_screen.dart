@@ -1,33 +1,37 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/app_colors.dart';
+import '../../providers/onboarding_provider.dart';
 
-class LocationScreen extends StatefulWidget {
+class LocationScreen extends ConsumerStatefulWidget {
   const LocationScreen({super.key});
 
   @override
-  State<LocationScreen> createState() => _LocationScreenState();
+  ConsumerState<LocationScreen> createState() => _LocationScreenState();
 }
 
-class _LocationScreenState extends State<LocationScreen> {
+class _LocationScreenState extends ConsumerState<LocationScreen> {
   String? selectedLocation = 'Nairobi CBD';
 
   final List<Map<String, String>> locations = [
     {
       'title': 'Nairobi CBD',
       'subtitle': 'Detected from your location',
+      'region': 'kenya',
+      'sub_region': 'nairobi',
     },
     {
       'title': 'Coast — Mombasa',
       'subtitle': 'Swahili cuisine region',
+      'region': 'kenya',
+      'sub_region': 'mombasa',
     },
     {
       'title': 'Kisumu lakeside',
       'subtitle': 'Luo fish dishes',
-    },
-    {
-      'title': 'Set manually',
-      'subtitle': 'Type your area',
+      'region': 'kenya',
+      'sub_region': 'kisumu',
     },
   ];
 
@@ -42,7 +46,6 @@ class _LocationScreenState extends State<LocationScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 16),
-              // Progress Bar
               Row(
                 children: [
                   Expanded(child: _buildProgressSegment(true)),
@@ -160,6 +163,13 @@ class _LocationScreenState extends State<LocationScreen> {
                   height: 64,
                   child: ElevatedButton(
                     onPressed: () {
+                      final selected = locations.firstWhere(
+                        (l) => l['title'] == selectedLocation,
+                      );
+                      ref.read(onboardingProvider.notifier).setLocation(
+                            region: selected['region']!,
+                            subRegion: selected['sub_region']!,
+                          );
                       Navigator.pushNamed(context, '/budget');
                     },
                     style: ElevatedButton.styleFrom(

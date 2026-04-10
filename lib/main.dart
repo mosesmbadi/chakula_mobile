@@ -5,10 +5,12 @@ import 'core/app_colors.dart';
 import 'modules/onboarding/name_screen.dart';
 import 'modules/onboarding/location_screen.dart';
 import 'modules/onboarding/budget_screen.dart';
+import 'modules/auth/register_screen.dart';
 import 'modules/main_shell.dart';
 import 'modules/home/suggestion_screen.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const ProviderScope(child: ChakulaApp()));
 }
 
@@ -34,6 +36,7 @@ class ChakulaApp extends StatelessWidget {
         '/name': (context) => const NameScreen(),
         '/location': (context) => const LocationScreen(),
         '/budget': (context) => const BudgetScreen(),
+        '/register': (context) => const RegisterScreen(),
         '/home': (context) => const MainShell(),
         '/suggestion': (context) => const SuggestionScreen(),
       },

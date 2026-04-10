@@ -148,8 +148,8 @@ class SuggestionScreen extends StatelessWidget {
                             child: ElevatedButton(
                               onPressed: () {},
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFFCEBEB),
-                                foregroundColor: const Color(0xFFB04C4C),
+                                backgroundColor: AppColors.red.withValues(alpha: 0.1),
+                                foregroundColor: AppColors.red,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(20),
                                 ),

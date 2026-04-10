@@ -22,6 +22,8 @@ class AuthRepository {
     required String name,
     required List<String> dietaryGoals,
     required int dailyBudget,
+    required String region,
+    required String subRegion,
   }) async {
     final data = await _client.post(
       '/users/register/',
@@ -31,6 +33,8 @@ class AuthRepository {
         'name': name,
         'dietaryGoals': dietaryGoals,
         'dailyBudget': dailyBudget,
+        'region': region,
+        'sub_region': subRegion,
       },
       authenticated: false,
     );

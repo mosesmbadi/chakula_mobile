@@ -49,6 +49,8 @@ class AuthNotifier extends Notifier<AuthState> {
     required String name,
     required List<String> dietaryGoals,
     required int dailyBudget,
+    required String region,
+    required String subRegion,
   }) async {
     state = const AuthInitializing();
     try {
@@ -58,6 +60,8 @@ class AuthNotifier extends Notifier<AuthState> {
         name: name,
         dietaryGoals: dietaryGoals,
         dailyBudget: dailyBudget,
+        region: region,
+        subRegion: subRegion,
       );
       state = AuthAuthenticated(user);
       return null; // no error

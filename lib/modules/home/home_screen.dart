@@ -3,7 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/app_colors.dart';
 import '../../data/models/meal.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/recommendations_provider.dart';
+import '../../widgets/app_toast.dart';
+import '../auth/register_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -42,7 +45,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
+  bool _requireAuth() {
+    final isAuth = ref.read(authProvider) is AuthAuthenticated;
+    if (!isAuth) {
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const RegisterScreen()),
+      );
+    }
+    return isAuth;
+  }
+
   Future<void> _acceptCurrentMeal(Map<String, List<Meal>> allFoods) async {
+    if (!_requireAuth()) return;
     final foods = allFoods[_mealType] ?? [];
     if (foods.isEmpty || _isAccepting) return;
 
@@ -53,13 +67,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (!mounted) return;
     setState(() => _isAccepting = false);
 
-    _showSnackBar(
-      error == null ? '$_mealType accepted!' : 'Could not accept meal. Please try again.',
-      success: error == null,
+    AppToast.show(
+      context,
+      error == null ? '${_mealType[0].toUpperCase()}${_mealType.substring(1)} accepted!' : 'Could not accept meal. Please try again.',
+      type: error == null ? ToastType.success : ToastType.error,
     );
   }
 
   Future<void> _acceptDayPlan(Map<String, List<Meal>> allFoods) async {
+    if (!_requireAuth()) return;
     if (_isAccepting) return;
     setState(() => _isAccepting = true);
 
@@ -69,20 +85,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (!mounted) return;
     setState(() => _isAccepting = false);
 
-    _showSnackBar(
+    AppToast.show(
+      context,
       error == null ? "Today's plan accepted!" : 'Could not accept plan. Please try again.',
-      success: error == null,
-    );
-  }
-
-  void _showSnackBar(String message, {bool success = false}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: success ? AppColors.accent : Colors.red.shade700,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
+      type: error == null ? ToastType.success : ToastType.error,
     );
   }
 
@@ -140,7 +146,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       children: [
         const SizedBox(height: 8),
         Text(
-          'Habari, Kamau',
+          () {
+            final auth = ref.watch(authProvider);
+            if (auth is AuthAuthenticated) return 'Hello ${auth.user.name} 👋';
+            return 'Hello Traveler 👋';
+          }(),
           style: GoogleFonts.inter(fontSize: 16, color: AppColors.textSecondary),
         ),
         const SizedBox(height: 4),

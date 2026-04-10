@@ -203,7 +203,11 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
                   child: ElevatedButton(
                     onPressed: () {
                       ref.read(onboardingProvider.notifier).setBudget(budget.toInt());
-                      Navigator.pushNamed(context, '/home');
+                      Navigator.pushNamedAndRemoveUntil(
+                        context,
+                        '/home',
+                        (route) => false,
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,

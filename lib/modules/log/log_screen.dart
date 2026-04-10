@@ -18,6 +18,7 @@ class LogScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        automaticallyImplyLeading: false,
         title: Text(
           '9:41',
           style: GoogleFonts.inter(
