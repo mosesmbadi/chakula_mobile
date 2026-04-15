@@ -6,6 +6,7 @@ final isarServiceProvider = Provider<IsarService>((ref) => IsarService());
 
 class OnboardingDraft {
   final String name;
+  final String county;
   final String region;
   final String subRegion;
   final int budget;
@@ -13,6 +14,7 @@ class OnboardingDraft {
 
   const OnboardingDraft({
     this.name = '',
+    this.county = 'Nairobi',
     this.region = 'kenya',
     this.subRegion = 'nairobi',
     this.budget = 200,
@@ -21,6 +23,7 @@ class OnboardingDraft {
 
   OnboardingDraft copyWith({
     String? name,
+    String? county,
     String? region,
     String? subRegion,
     int? budget,
@@ -28,6 +31,7 @@ class OnboardingDraft {
   }) {
     return OnboardingDraft(
       name: name ?? this.name,
+      county: county ?? this.county,
       region: region ?? this.region,
       subRegion: subRegion ?? this.subRegion,
       budget: budget ?? this.budget,
@@ -53,6 +57,7 @@ class OnboardingNotifier extends Notifier<OnboardingDraft> {
     if (data != null) {
       state = OnboardingDraft(
         name: data.name,
+        county: data.county,
         region: data.region,
         subRegion: data.subRegion,
         budget: data.dailyBudget,
@@ -66,8 +71,12 @@ class OnboardingNotifier extends Notifier<OnboardingDraft> {
     await _persist();
   }
 
-  Future<void> setLocation({required String region, required String subRegion}) async {
-    state = state.copyWith(region: region, subRegion: subRegion);
+  Future<void> setLocation({
+    required String county,
+    required String region,
+    required String subRegion,
+  }) async {
+    state = state.copyWith(county: county, region: region, subRegion: subRegion);
     await _persist();
   }
 
@@ -89,6 +98,7 @@ class OnboardingNotifier extends Notifier<OnboardingDraft> {
   Future<void> _persist() async {
     final data = OnboardingData(
       name: state.name,
+      county: state.county,
       region: state.region,
       subRegion: state.subRegion,
       dailyBudget: state.budget,

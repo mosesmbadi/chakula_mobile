@@ -11,15 +11,15 @@ class IsarService {
 
   Future<Isar> _openDb() async {
     final dir = await getApplicationDocumentsDirectory();
-    return Isar.openAsync(
-      schemas: [OnboardingDataSchema],
+    return Isar.open(
+      [OnboardingDataSchema],
       directory: dir.path,
     );
   }
 
   Future<void> saveOnboardingData(OnboardingData data) async {
     final isar = await _db;
-    await isar.writeAsync((isar) {
+    await isar.writeTxn(() async {
       isar.onboardingDatas.put(data);
     });
   }
@@ -31,7 +31,7 @@ class IsarService {
 
   Future<void> clearOnboardingData() async {
     final isar = await _db;
-    await isar.writeAsync((isar) {
+    await isar.writeTxn(() async {
       isar.onboardingDatas.clear();
     });
   }

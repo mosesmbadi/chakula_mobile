@@ -80,7 +80,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           int.tryParse(_budgetController.text) ?? ref.read(onboardingProvider).budget,
         );
     if (_selectedRegion != null && _selectedSubRegion != null) {
+      final currentDraft = ref.read(onboardingProvider);
       await ref.read(onboardingProvider.notifier).setLocation(
+            county: currentDraft.county,
             region: _selectedRegion!,
             subRegion: _selectedSubRegion!,
           );
