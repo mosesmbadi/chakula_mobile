@@ -55,6 +55,32 @@ class AuthRepository {
     return user;
   }
 
+  Future<User> login({
+    required String email,
+    required String password,
+  }) async {
+    final data = await _client.post(
+      '/users/login/',
+      body: {'email': email, 'password': password},
+      authenticated: false,
+    );
+
+    final userJson = data['user'] as Map<String, dynamic>? ?? data;
+    final user = User.fromJson(userJson);
+
+    final accessToken = data['accessToken'] as String? ??
+        userJson['accessToken'] as String?;
+    final refreshToken = data['refreshToken'] as String? ??
+        userJson['refreshToken'] as String?;
+
+    if (accessToken != null && refreshToken != null) {
+      await _client.saveTokens(accessToken, refreshToken);
+    }
+
+    await _saveUserData(user);
+    return user;
+  }
+
   Future<User?> getStoredUser() async {
     final access = await _client.getAccessToken();
     final userDataJson = await _storage.read(key: _userDataKey);

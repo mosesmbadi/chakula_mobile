@@ -6,6 +6,7 @@ import 'modules/onboarding/name_screen.dart';
 import 'modules/onboarding/country_screen.dart';
 import 'modules/onboarding/location_screen.dart';
 import 'modules/onboarding/budget_screen.dart';
+import 'modules/auth/login_screen.dart';
 import 'modules/auth/register_screen.dart';
 import 'modules/main_shell.dart';
 import 'modules/home/suggestion_screen.dart';
@@ -40,6 +41,7 @@ class ChakulaApp extends StatelessWidget {
         '/country': (context) => const CountryScreen(),
         '/location': (context) => const LocationScreen(),
         '/budget': (context) => const BudgetScreen(),
+        '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
         '/suggestion': (context) => const SuggestionScreen(),
       },

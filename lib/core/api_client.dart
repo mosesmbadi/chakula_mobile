@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'app_config.dart';
 
@@ -60,6 +61,31 @@ class ApiClient {
     return _parseResponse(response);
   }
 
+  Future<Map<String, dynamic>> postMultipart(
+    String path, {
+    required Map<String, String> fields,
+    String? imagePath,
+  }) async {
+    final token = await _storage.read(key: _accessTokenKey);
+    final uri = Uri.parse('${AppConfig.apiBaseUrl}$path');
+    final request = http.MultipartRequest('POST', uri);
+    if (token != null) request.headers['Authorization'] = 'Bearer $token';
+    request.fields.addAll(fields);
+    if (imagePath != null) {
+      request.files.add(await http.MultipartFile.fromPath(
+        'image',
+        imagePath,
+        contentType: MediaType.parse(_mimeTypeFromPath(imagePath)),
+      ));
+    }
+    final streamed = await request.send().timeout(_timeout);
+    final response = await http.Response.fromStream(streamed);
+    if (response.statusCode == 401) {
+      return _refreshAndRetry(() => postMultipart(path, fields: fields, imagePath: imagePath));
+    }
+    return _parseResponse(response);
+  }
+
   Future<Map<String, dynamic>> _refreshAndRetry(
     Future<Map<String, dynamic>> Function() retry,
   ) async {
@@ -113,6 +139,21 @@ class ApiClient {
 
   Future<String?> getAccessToken() => _storage.read(key: _accessTokenKey);
   Future<String?> getRefreshToken() => _storage.read(key: _refreshTokenKey);
+
+  String _mimeTypeFromPath(String path) {
+    final ext = path.split('.').last.toLowerCase();
+    switch (ext) {
+      case 'jpg':
+      case 'jpeg':
+        return 'image/jpeg';
+      case 'png':
+        return 'image/png';
+      case 'webp':
+        return 'image/webp';
+      default:
+        return 'image/jpeg';
+    }
+  }
 }
 
 class ApiException implements Exception {

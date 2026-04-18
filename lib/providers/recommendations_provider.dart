@@ -31,11 +31,13 @@ class RecommendationsNotifier extends AsyncNotifier<Map<String, List<Meal>>> {
     return ref.read(onboardingProvider).value?.country ?? 'kenya';
   }
 
-  Future<String?> acceptMeal(String mealType, List<Meal> foods) async {
+  Future<String?> acceptMeal(String mealType, List<Meal> foods, {int? userCost, String? imagePath}) async {
     try {
       await ref.read(recommendationsRepositoryProvider).acceptMeal(
             mealType: mealType,
             foods: foods,
+            userCost: userCost,
+            imagePath: imagePath,
           );
       return null;
     } catch (e) {

@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/app_colors.dart';
 import '../../data/models/user.dart';
 import '../../providers/auth_provider.dart';
+import '../auth/login_screen.dart';
 import '../auth/register_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -54,24 +55,49 @@ class ProfileScreen extends ConsumerWidget {
               style: GoogleFonts.inter(fontSize: 16, color: AppColors.textSecondary),
             ),
             const SizedBox(height: 48),
-            SizedBox(
-              width: double.infinity,
-              height: 64,
-              child: ElevatedButton(
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const RegisterScreen()),
+            Row(
+              children: [
+                Expanded(
+                  child: SizedBox(
+                    height: 64,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        'Register Now',
+                        style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
                 ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                  elevation: 0,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: SizedBox(
+                    height: 64,
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const LoginScreen()),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.primary,
+                        side: const BorderSide(color: AppColors.primary, width: 2),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                      ),
+                      child: Text(
+                        'Login',
+                        style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
                 ),
-                child: Text(
-                  'Register Now',
-                  style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-              ),
+              ],
             ),
           ],
         ),

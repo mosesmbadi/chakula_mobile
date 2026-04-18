@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../core/app_colors.dart';
 import '../../data/models/meal.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/recommendations_provider.dart';
 import '../../widgets/app_toast.dart';
+import '../auth/login_screen.dart';
 import '../auth/register_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -49,22 +51,117 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   bool _requireAuth() {
     final isAuth = ref.read(authProvider) is AuthAuthenticated;
     if (!isAuth) {
-      Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => const RegisterScreen()),
+      showModalBottomSheet(
+        context: context,
+        backgroundColor: AppColors.onboardingBackground,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+        builder: (_) => Padding(
+          padding: const EdgeInsets.fromLTRB(24, 28, 24, 40),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Save your meal',
+                style: GoogleFonts.inter(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Create an account or log in to track what you eat.',
+                style: GoogleFonts.inter(
+                  fontSize: 15,
+                  color: AppColors.onboardingTextSecondary,
+                ),
+              ),
+              const SizedBox(height: 32),
+              Row(
+                children: [
+                  Expanded(
+                    child: SizedBox(
+                      height: 56,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          Navigator.of(context).push(
+                            MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.black,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: Text(
+                          'Register Now',
+                          style: GoogleFonts.inter(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: SizedBox(
+                      height: 56,
+                      child: OutlinedButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          Navigator.of(context).push(
+                            MaterialPageRoute(builder: (_) => const LoginScreen()),
+                          );
+                        },
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.primary,
+                          side: const BorderSide(color: AppColors.primary, width: 2),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: Text(
+                          'Login',
+                          style: GoogleFonts.inter(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       );
     }
     return isAuth;
   }
 
-  Future<void> _acceptCurrentMeal(Map<String, List<Meal>> allFoods) async {
+  Future<void> _acceptCurrentMeal(Meal meal) async {
     if (!_requireAuth()) return;
-    final foods = allFoods[_mealType] ?? [];
-    if (foods.isEmpty || _isAccepting) return;
+    if (_isAccepting) return;
+
+    final userCost = await _promptForUserCost(meal);
+    if (!mounted) return;
+
+    final imagePath = await _promptForPhoto();
+    if (!mounted) return;
 
     setState(() => _isAccepting = true);
     final error = await ref
         .read(recommendationsProvider.notifier)
-        .acceptMeal(_mealType, foods);
+        .acceptMeal(_mealType, [meal], userCost: userCost, imagePath: imagePath);
     if (!mounted) return;
     setState(() => _isAccepting = false);
 
@@ -73,6 +170,96 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       error == null ? '${_mealType[0].toUpperCase()}${_mealType.substring(1)} accepted!' : 'Could not accept meal. Please try again.',
       type: error == null ? ToastType.success : ToastType.error,
     );
+  }
+
+  Future<int?> _promptForUserCost(Meal meal) {
+    return showModalBottomSheet<int>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) => _UserCostSheet(meal: meal),
+    );
+  }
+
+  Future<String?> _promptForPhoto() async {
+    String? imagePath;
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetCtx) => Padding(
+        padding: const EdgeInsets.fromLTRB(24, 20, 24, 36),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Add a photo?',
+              style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Optionally attach a photo of your meal.',
+              style: GoogleFonts.inter(fontSize: 14, color: AppColors.textSecondary),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    icon: const Icon(Icons.camera_alt_outlined),
+                    label: Text('Camera', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.accent,
+                      side: const BorderSide(color: AppColors.accent),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    ),
+                    onPressed: () async {
+                      final picked = await ImagePicker().pickImage(source: ImageSource.camera, imageQuality: 85);
+                      imagePath = picked?.path;
+                      if (sheetCtx.mounted) Navigator.pop(sheetCtx);
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    icon: const Icon(Icons.photo_library_outlined),
+                    label: Text('Gallery', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.accent,
+                      side: const BorderSide(color: AppColors.accent),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    ),
+                    onPressed: () async {
+                      final picked = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 85);
+                      imagePath = picked?.path;
+                      if (sheetCtx.mounted) Navigator.pop(sheetCtx);
+                    },
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: TextButton(
+                onPressed: () => Navigator.pop(sheetCtx),
+                child: Text('Skip', style: GoogleFonts.inter(fontSize: 15, color: AppColors.textSecondary)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    return imagePath;
   }
 
 
@@ -322,7 +509,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: GestureDetector(
                   onTap: _isAccepting
                       ? null
-                      : () => _acceptCurrentMeal(allFoods),
+                      : () => _acceptCurrentMeal(food),
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     decoration: BoxDecoration(
@@ -480,6 +667,97 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           Text(
             price,
             style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _UserCostSheet extends StatefulWidget {
+  final Meal meal;
+  const _UserCostSheet({required this.meal});
+
+  @override
+  State<_UserCostSheet> createState() => _UserCostSheetState();
+}
+
+class _UserCostSheetState extends State<_UserCostSheet> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.meal.priceMinKes.toString());
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(24, 20, 24, MediaQuery.of(context).viewInsets.bottom + 36),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'How much did you pay?',
+            style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Listed price is KSh ${widget.meal.priceMinKes}. Enter what you actually paid.',
+            style: GoogleFonts.inter(fontSize: 14, color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: 20),
+          TextField(
+            controller: _controller,
+            keyboardType: TextInputType.number,
+            autofocus: true,
+            style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+            decoration: InputDecoration(
+              prefixText: 'KSh ',
+              prefixStyle: GoogleFonts.inter(fontSize: 18, color: AppColors.textSecondary),
+              enabledBorder: const UnderlineInputBorder(borderSide: BorderSide(color: AppColors.primary, width: 2)),
+              focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: AppColors.accent, width: 2)),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.textSecondary,
+                    side: BorderSide(color: Colors.black.withValues(alpha: 0.15)),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                  child: Text('Skip', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                flex: 2,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context, int.tryParse(_controller.text.trim())),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.accent,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    elevation: 0,
+                  ),
+                  child: Text('Confirm', style: GoogleFonts.inter(fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
           ),
         ],
       ),

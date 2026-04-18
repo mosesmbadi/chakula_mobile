@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api_client.dart';
 import '../models/meal.dart';
@@ -71,13 +72,16 @@ class RecommendationsRepository {
   Future<void> acceptMeal({
     required String mealType,
     required List<Meal> foods,
+    int? userCost,
+    String? imagePath,
   }) async {
-    await _client.post(
+    await _client.postMultipart(
       '/recommendations/accept',
-      body: {
+      fields: {
         'mealType': mealType,
-        'foods': foods.take(1).map((f) => f.toAcceptPayload()).toList(),
+        'foods': jsonEncode(foods.map((f) => f.toAcceptPayload(userCost: userCost)).toList()),
       },
+      imagePath: imagePath,
     );
   }
 
