@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/app_colors.dart';
+import '../../providers/app_screen_provider.dart';
 import '../../providers/onboarding_provider.dart';
 
 class BudgetScreen extends ConsumerStatefulWidget {
@@ -185,13 +186,16 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
                   width: double.infinity,
                   height: 64,
                   child: ElevatedButton(
-                    onPressed: () {
-                      ref.read(onboardingProvider.notifier).setBudget(budget.toInt());
-                      Navigator.pushNamedAndRemoveUntil(
-                        context,
-                        '/home',
-                        (route) => false,
-                      );
+                    onPressed: () async {
+                      await ref.read(onboardingProvider.notifier).setBudget(budget.toInt());
+                      ref.invalidate(appScreenProvider);
+                      if (context.mounted) {
+                        Navigator.pushNamedAndRemoveUntil(
+                          context,
+                          '/home',
+                          (route) => false,
+                        );
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,

@@ -9,6 +9,7 @@ import 'modules/onboarding/budget_screen.dart';
 import 'modules/auth/register_screen.dart';
 import 'modules/main_shell.dart';
 import 'modules/home/suggestion_screen.dart';
+import 'providers/app_screen_provider.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,16 +33,43 @@ class ChakulaApp extends StatelessWidget {
         ),
         textTheme: GoogleFonts.interTextTheme(),
       ),
-      initialRoute: '/name',
+      initialRoute: '/home',
       routes: {
+        '/home': (context) => const HomeWrapper(),
         '/name': (context) => const NameScreen(),
         '/country': (context) => const CountryScreen(),
         '/location': (context) => const LocationScreen(),
         '/budget': (context) => const BudgetScreen(),
         '/register': (context) => const RegisterScreen(),
-        '/home': (context) => const MainShell(),
         '/suggestion': (context) => const SuggestionScreen(),
       },
+    );
+  }
+}
+
+/// Smart home wrapper that routes to the correct screen based on app state
+class HomeWrapper extends ConsumerWidget {
+  const HomeWrapper({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final appScreenAsync = ref.watch(appScreenProvider);
+
+    return appScreenAsync.when(
+      data: (screen) {
+        if (screen is AuthenticatedScreen) {
+          return const MainShell();
+        } else if (screen is OnboardingScreen) {
+          return const NameScreen();
+        } else if (screen is AuthRegisterScreen) {
+          return const MainShell();
+        }
+        return const MainShell(); // fallback
+      },
+      loading: () =>
+          const Scaffold(body: Center(child: CircularProgressIndicator())),
+      error: (error, stackTrace) =>
+          Scaffold(body: Center(child: Text('Error: $error'))),
     );
   }
 }

@@ -1,5 +1,4 @@
 # chakula_mobile
-
  Meal Generator App
 
 
@@ -23,3 +22,6 @@ lib/
 ## How to run:
 flutter pub get
 flutter run --flavor development
+flutter run --flavor development --dart-define=BACKEND_URL=https://chakula-api.somastories.app/api
+
+flutter run --flavor development --dart-define=BACKEND_URL=http://192.168.100.46:3000/api

@@ -28,6 +28,8 @@ class ApiClient {
     final uri = Uri.parse('${AppConfig.apiBaseUrl}$path')
         .replace(queryParameters: queryParams);
 
+    debugPrint('[ApiClient] GET: $uri');
+    
     final response = await http
         .get(uri, headers: _baseHeaders(token: token))
         .timeout(_timeout);

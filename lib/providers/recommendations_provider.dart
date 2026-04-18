@@ -13,17 +13,22 @@ class RecommendationsNotifier extends AsyncNotifier<Map<String, List<Meal>>> {
   @override
   Future<Map<String, List<Meal>>> build() async {
     final repo = ref.read(recommendationsRepositoryProvider);
-    return repo.fetchAll(budget: _resolveBudget(), region: _resolveRegion());
+    final isAuthenticated = ref.read(authProvider) is AuthAuthenticated;
+    return repo.fetchAll(
+      budget: _resolveBudget(),
+      region: _resolveRegion(),
+      authenticated: isAuthenticated,
+    );
   }
 
   int _resolveBudget() {
     final authState = ref.read(authProvider);
     if (authState is AuthAuthenticated) return authState.user.dailyBudget;
-    return ref.read(onboardingProvider).budget;
+    return ref.read(onboardingProvider).value?.budget ?? 200;
   }
 
   String _resolveRegion() {
-    return ref.read(onboardingProvider).country;
+    return ref.read(onboardingProvider).value?.country ?? 'kenya';
   }
 
   Future<String?> acceptMeal(String mealType, List<Meal> foods) async {
@@ -51,7 +56,8 @@ class RecommendationsNotifier extends AsyncNotifier<Map<String, List<Meal>>> {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
       final repo = ref.read(recommendationsRepositoryProvider);
-      return repo.fetchAll(budget: _resolveBudget(), region: _resolveRegion());
+      final isAuthenticated = ref.read(authProvider) is AuthAuthenticated;
+      return repo.fetchAll(budget: _resolveBudget(), region: _resolveRegion(), authenticated: isAuthenticated);
     });
   }
 }

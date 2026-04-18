@@ -19,14 +19,15 @@ class IsarService {
 
   Future<void> saveOnboardingData(OnboardingData data) async {
     final isar = await _db;
+    data.id = 1; // Fixed ID so every save upserts the same record
     await isar.writeTxn(() async {
-      isar.onboardingDatas.put(data);
+      await isar.onboardingDatas.put(data);
     });
   }
 
   Future<OnboardingData?> getOnboardingData() async {
     final isar = await _db;
-    return isar.onboardingDatas.get(0);
+    return isar.onboardingDatas.get(1);
   }
 
   Future<void> clearOnboardingData() async {

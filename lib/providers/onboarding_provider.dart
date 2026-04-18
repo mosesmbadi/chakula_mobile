@@ -45,21 +45,16 @@ class OnboardingDraft {
 }
 
 final onboardingProvider =
-    NotifierProvider<OnboardingNotifier, OnboardingDraft>(OnboardingNotifier.new);
+    AsyncNotifierProvider<OnboardingNotifier, OnboardingDraft>(OnboardingNotifier.new);
 
-class OnboardingNotifier extends Notifier<OnboardingDraft> {
+class OnboardingNotifier extends AsyncNotifier<OnboardingDraft> {
   @override
-  OnboardingDraft build() {
-    _loadFromIsar();
-    return const OnboardingDraft();
-  }
-
-  IsarService get _isar => ref.read(isarServiceProvider);
-
-  Future<void> _loadFromIsar() async {
-    final data = await _isar.getOnboardingData();
+  Future<OnboardingDraft> build() async {
+    final isar = ref.read(isarServiceProvider);
+    final data = await isar.getOnboardingData();
+    
     if (data != null) {
-      state = OnboardingDraft(
+      return OnboardingDraft(
         name: data.name,
         country: data.region,
         county: data.county,
@@ -69,16 +64,22 @@ class OnboardingNotifier extends Notifier<OnboardingDraft> {
         dietaryGoals: data.dietaryGoals,
       );
     }
+    
+    return const OnboardingDraft();
   }
 
+  IsarService get _isar => ref.read(isarServiceProvider);
+
   Future<void> setName(String name) async {
-    state = state.copyWith(name: name);
-    await _persist();
+    final current = await future;
+    state = AsyncValue.data(current.copyWith(name: name));
+    await _persist(state.value!);
   }
 
   Future<void> setCountry(String country) async {
-    state = state.copyWith(country: country, region: country);
-    await _persist();
+    final current = await future;
+    state = AsyncValue.data(current.copyWith(country: country, region: country));
+    await _persist(state.value!);
   }
 
   Future<void> setLocation({
@@ -86,33 +87,36 @@ class OnboardingNotifier extends Notifier<OnboardingDraft> {
     required String region,
     required String subRegion,
   }) async {
-    state = state.copyWith(county: county, region: region, subRegion: subRegion);
-    await _persist();
+    final current = await future;
+    state = AsyncValue.data(current.copyWith(county: county, region: region, subRegion: subRegion));
+    await _persist(state.value!);
   }
 
   Future<void> setBudget(int budget) async {
-    state = state.copyWith(budget: budget);
-    await _persist();
+    final current = await future;
+    state = AsyncValue.data(current.copyWith(budget: budget));
+    await _persist(state.value!);
   }
 
   Future<void> setDietaryGoals(List<String> goals) async {
-    state = state.copyWith(dietaryGoals: goals);
-    await _persist();
+    final current = await future;
+    state = AsyncValue.data(current.copyWith(dietaryGoals: goals));
+    await _persist(state.value!);
   }
 
   Future<void> clear() async {
-    state = const OnboardingDraft();
+    state = const AsyncValue.data(OnboardingDraft());
     await _isar.clearOnboardingData();
   }
 
-  Future<void> _persist() async {
+  Future<void> _persist(OnboardingDraft draft) async {
     final data = OnboardingData(
-      name: state.name,
-      county: state.county,
-      region: state.country,
-      subRegion: state.subRegion,
-      dailyBudget: state.budget,
-      dietaryGoals: state.dietaryGoals,
+      name: draft.name,
+      county: draft.county,
+      region: draft.country,
+      subRegion: draft.subRegion,
+      dailyBudget: draft.budget,
+      dietaryGoals: draft.dietaryGoals,
     );
     await _isar.saveOnboardingData(data);
   }

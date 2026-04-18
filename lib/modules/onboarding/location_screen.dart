@@ -250,7 +250,7 @@ class _LocationScreenState extends ConsumerState<LocationScreen> {
                         : () {
                             ref.read(onboardingProvider.notifier).setLocation(
                                   county: selectedLocation!,
-                                  region: ref.read(onboardingProvider).country,
+                                  region: ref.read(onboardingProvider).value?.country ?? 'kenya',
                                   subRegion: selectedLocation!
                                       .toLowerCase()
                                       .replaceAll(' ', '_'),

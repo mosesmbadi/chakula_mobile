@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/app_colors.dart';
+import '../../core/counties_data.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/onboarding_provider.dart';
 import '../../widgets/app_toast.dart';
@@ -29,9 +30,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   bool _isLoading = false;
   bool _moreExpanded = false;
 
-  static const _regionOptions = {
-    'kenya': ['nairobi', 'mombasa', 'kisumu'],
-  };
+  static const _regionOptions = ['kenya'];
+
+  List<String> get _subRegionOptions {
+    return CountiesData.getCountyNames()
+        .map((c) => c.toLowerCase().replaceAll(' ', '_'))
+        .toList();
+  }
 
   static const _dietaryOptions = [
     'high-fibre',
@@ -50,7 +55,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   void _prefillFromDraft() {
-    final draft = ref.read(onboardingProvider);
+    final draft = ref.read(onboardingProvider).value;
+    if (draft == null) return;
     _nameController.text = draft.name;
     _budgetController.text = draft.budget.toString();
     _selectedRegion = draft.region;
@@ -75,13 +81,20 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     setState(() => _isLoading = true);
 
     // Persist any edits made in the "More" section back to the provider
-    await ref.read(onboardingProvider.notifier).setName(_nameController.text.trim());
-    await ref.read(onboardingProvider.notifier).setBudget(
-          int.tryParse(_budgetController.text) ?? ref.read(onboardingProvider).budget,
+    await ref
+        .read(onboardingProvider.notifier)
+        .setName(_nameController.text.trim());
+    await ref
+        .read(onboardingProvider.notifier)
+        .setBudget(
+          int.tryParse(_budgetController.text) ??
+              ref.read(onboardingProvider).requireValue.budget,
         );
     if (_selectedRegion != null && _selectedSubRegion != null) {
-      final currentDraft = ref.read(onboardingProvider);
-      await ref.read(onboardingProvider.notifier).setLocation(
+      final currentDraft = ref.read(onboardingProvider).requireValue;
+      await ref
+          .read(onboardingProvider.notifier)
+          .setLocation(
             county: currentDraft.county,
             region: _selectedRegion!,
             subRegion: _selectedSubRegion!,
@@ -89,8 +102,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     }
     await ref.read(onboardingProvider.notifier).setDietaryGoals(_dietaryGoals);
 
-    final draft = ref.read(onboardingProvider);
-    final error = await ref.read(authProvider.notifier).register(
+    final draft = ref.read(onboardingProvider).requireValue;
+    final error = await ref
+        .read(authProvider.notifier)
+        .register(
           email: _emailController.text.trim(),
           password: _passwordController.text,
           name: draft.name,
@@ -106,15 +121,20 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (error == null) {
       await ref.read(onboardingProvider.notifier).clear();
       if (!mounted) return;
-      Navigator.of(context).pop();
+      // Navigate to home, which will detect authenticated state
+      Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
     } else {
-      AppToast.show(context, 'Registration failed. Please try again.', type: ToastType.error);
+      AppToast.show(
+        context,
+        'Registration failed. Please try again.',
+        type: ToastType.error,
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final draft = ref.watch(onboardingProvider);
+    final draft = ref.watch(onboardingProvider).value ?? const OnboardingDraft();
 
     return Scaffold(
       backgroundColor: AppColors.onboardingBackground,
@@ -160,7 +180,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   label: 'Email',
                   hint: 'hello@example.com',
                   keyboardType: TextInputType.emailAddress,
-                  validator: (v) => v!.contains('@') ? null : 'Enter a valid email',
+                  validator: (v) =>
+                      v!.contains('@') ? null : 'Enter a valid email',
                 ),
                 const SizedBox(height: 24),
                 _buildTextField(
@@ -168,8 +189,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   label: 'Password',
                   hint: '••••••••',
                   obscureText: true,
-                  validator: (v) =>
-                      v!.length >= 6 ? null : 'Password must be at least 6 characters',
+                  validator: (v) => v!.length >= 6
+                      ? null
+                      : 'Password must be at least 6 characters',
                 ),
                 const SizedBox(height: 24),
                 _buildTextField(
@@ -179,7 +201,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   obscureText: true,
                   validator: (v) {
                     if (v!.isEmpty) return 'Please confirm your password';
-                    if (v != _passwordController.text) return 'Passwords do not match';
+                    if (v != _passwordController.text)
+                      return 'Passwords do not match';
                     return null;
                   },
                 ),
@@ -252,7 +275,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     '— review your onboarding details',
                     style: GoogleFonts.inter(
                       fontSize: 13,
-                      color: AppColors.onboardingTextSecondary.withValues(alpha: 0.6),
+                      color: AppColors.onboardingTextSecondary.withValues(
+                        alpha: 0.6,
+                      ),
                     ),
                   ),
                   const Spacer(),
@@ -285,7 +310,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     controller: _nameController,
                     label: 'Name',
                     hint: 'Your name',
-                    validator: (v) => v!.isEmpty ? 'Please enter your name' : null,
+                    validator: (v) =>
+                        v!.isEmpty ? 'Please enter your name' : null,
                   ),
                   const SizedBox(height: 20),
 
@@ -297,7 +323,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     keyboardType: TextInputType.number,
                     validator: (v) {
                       final n = int.tryParse(v ?? '');
-                      if (n == null || n < 50) return 'Enter a valid budget (min KSh 50)';
+                      if (n == null || n < 50)
+                        return 'Enter a valid budget (min KSh 50)';
                       return null;
                     },
                   ),
@@ -319,11 +346,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         borderSide: BorderSide(color: AppColors.primary),
                       ),
                     ),
-                    items: _regionOptions.keys
-                        .map((r) => DropdownMenuItem(
-                              value: r,
-                              child: Text(r[0].toUpperCase() + r.substring(1)),
-                            ))
+                    items: _regionOptions
+                        .map(
+                          (r) => DropdownMenuItem(
+                            value: r,
+                            child: Text(r[0].toUpperCase() + r.substring(1)),
+                          ),
+                        )
                         .toList(),
                     onChanged: (v) => setState(() {
                       _selectedRegion = v;
@@ -348,11 +377,21 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         borderSide: BorderSide(color: AppColors.primary),
                       ),
                     ),
-                    items: (_regionOptions[_selectedRegion] ?? [])
-                        .map((s) => DropdownMenuItem(
-                              value: s,
-                              child: Text(s[0].toUpperCase() + s.substring(1)),
-                            ))
+                    items: _subRegionOptions
+                        .map(
+                          (s) => DropdownMenuItem(
+                            value: s,
+                            child: Text(
+                              s
+                                  .replaceAll('_', ' ')
+                                  .split(' ')
+                                  .map(
+                                    (w) => w[0].toUpperCase() + w.substring(1),
+                                  )
+                                  .join(' '),
+                            ),
+                          ),
+                        )
                         .toList(),
                     onChanged: (v) => setState(() => _selectedSubRegion = v),
                   ),
@@ -375,7 +414,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           }
                         }),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 8,
+                          ),
                           decoration: BoxDecoration(
                             color: selected
                                 ? AppColors.primary.withValues(alpha: 0.2)
@@ -392,7 +434,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             style: GoogleFonts.inter(
                               fontSize: 13,
                               fontWeight: FontWeight.w500,
-                              color: selected ? AppColors.primary : AppColors.onboardingTextSecondary,
+                              color: selected
+                                  ? AppColors.primary
+                                  : AppColors.onboardingTextSecondary,
                             ),
                           ),
                         ),
@@ -444,7 +488,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           style: GoogleFonts.inter(fontSize: 18, color: Colors.white),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: GoogleFonts.inter(color: Colors.white.withValues(alpha: 0.3)),
+            hintStyle: GoogleFonts.inter(
+              color: Colors.white.withValues(alpha: 0.3),
+            ),
             enabledBorder: const UnderlineInputBorder(
               borderSide: BorderSide(color: Colors.white24),
             ),

@@ -16,9 +16,15 @@ class RecommendationsRepository {
   Future<Map<String, List<Meal>>> fetchAll({
     required int budget,
     required String region,
+    bool authenticated = false,
   }) async {
     final results = await Future.wait(
-      _mealTypes.map((type) => _fetchMealType(type, budget: budget, region: region)),
+      _mealTypes.map((type) => _fetchMealType(
+            type,
+            budget: budget,
+            region: region,
+            authenticated: authenticated,
+          )),
     );
 
     return {
@@ -31,17 +37,28 @@ class RecommendationsRepository {
     String mealType, {
     required int budget,
     required String region,
+    required bool authenticated,
   }) async {
     try {
-      final data = await _client.get(
-        '/public/recommendations/foods/recommend',
-        queryParams: {
-          'mealType': mealType,
-          'budget': budget.toString(),
-          'region': region,
-        },
-        authenticated: false,
-      );
+      final Map<String, dynamic> data;
+
+      if (authenticated) {
+        data = await _client.get(
+          '/recommendations/foods/recommend',
+          queryParams: {'mealType': mealType},
+          authenticated: true,
+        );
+      } else {
+        data = await _client.get(
+          '/public/recommendations/foods/recommend',
+          queryParams: {
+            'mealType': mealType,
+            'budget': budget.toString(),
+            'region': region,
+          },
+          authenticated: false,
+        );
+      }
 
       final recs = data['recommendations'] as Map<String, dynamic>?;
       final foods = recs?['foods'] as List?;
