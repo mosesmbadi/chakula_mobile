@@ -19,3 +19,7 @@ lib/
     ├── auth_provider.dart            # AuthState sealed class (initializing/authenticated/unauthenticated)
     ├── onboarding_provider.dart      # Draft name/budget/goals during onboarding
     └── recommendations_provider.dart # AsyncNotifier — loading/error/data handled automatically
+
+## How to run:
+flutter pub get
+flutter run --flavor development

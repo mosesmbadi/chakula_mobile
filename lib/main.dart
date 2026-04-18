@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'core/app_colors.dart';
 import 'modules/onboarding/name_screen.dart';
+import 'modules/onboarding/country_screen.dart';
 import 'modules/onboarding/location_screen.dart';
 import 'modules/onboarding/budget_screen.dart';
 import 'modules/auth/register_screen.dart';
@@ -34,6 +35,7 @@ class ChakulaApp extends StatelessWidget {
       initialRoute: '/name',
       routes: {
         '/name': (context) => const NameScreen(),
+        '/country': (context) => const CountryScreen(),
         '/location': (context) => const LocationScreen(),
         '/budget': (context) => const BudgetScreen(),
         '/register': (context) => const RegisterScreen(),

@@ -6,6 +6,7 @@ final isarServiceProvider = Provider<IsarService>((ref) => IsarService());
 
 class OnboardingDraft {
   final String name;
+  final String country;
   final String county;
   final String region;
   final String subRegion;
@@ -14,6 +15,7 @@ class OnboardingDraft {
 
   const OnboardingDraft({
     this.name = '',
+    this.country = 'kenya',
     this.county = 'Nairobi',
     this.region = 'kenya',
     this.subRegion = 'nairobi',
@@ -23,6 +25,7 @@ class OnboardingDraft {
 
   OnboardingDraft copyWith({
     String? name,
+    String? country,
     String? county,
     String? region,
     String? subRegion,
@@ -31,6 +34,7 @@ class OnboardingDraft {
   }) {
     return OnboardingDraft(
       name: name ?? this.name,
+      country: country ?? this.country,
       county: county ?? this.county,
       region: region ?? this.region,
       subRegion: subRegion ?? this.subRegion,
@@ -57,6 +61,7 @@ class OnboardingNotifier extends Notifier<OnboardingDraft> {
     if (data != null) {
       state = OnboardingDraft(
         name: data.name,
+        country: data.region,
         county: data.county,
         region: data.region,
         subRegion: data.subRegion,
@@ -68,6 +73,11 @@ class OnboardingNotifier extends Notifier<OnboardingDraft> {
 
   Future<void> setName(String name) async {
     state = state.copyWith(name: name);
+    await _persist();
+  }
+
+  Future<void> setCountry(String country) async {
+    state = state.copyWith(country: country, region: country);
     await _persist();
   }
 
@@ -99,7 +109,7 @@ class OnboardingNotifier extends Notifier<OnboardingDraft> {
     final data = OnboardingData(
       name: state.name,
       county: state.county,
-      region: state.region,
+      region: state.country,
       subRegion: state.subRegion,
       dailyBudget: state.budget,
       dietaryGoals: state.dietaryGoals,

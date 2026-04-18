@@ -1,13 +1,23 @@
-class AppConfig {
-  // Inject at build time:
-  // flutter run --dart-define=API_BASE_URL=https://api.yourapp.com --dart-define=API_KEY=your_key
-  static const String apiBaseUrl = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'http://10.0.2.2:3000/api',
-  );
+import 'package:flutter/foundation.dart';
 
-  static const String apiKey = String.fromEnvironment(
-    'API_KEY',
+class AppConfig {
+  static const String _productionApiUrl = 'https://chakula-api.somastories.app';
+  static const String _developmentApiUrl = 'http://127.0.0.1:3000';
+
+  static const String _customBackendUrl = String.fromEnvironment(
+    'BACKEND_URL',
     defaultValue: '',
   );
+
+  static String get apiBaseUrl {
+    if (_customBackendUrl.isNotEmpty) {
+      return _customBackendUrl;
+    }
+
+    if (kReleaseMode) {
+      return _productionApiUrl;
+    }
+
+    return _developmentApiUrl;
+  }
 }

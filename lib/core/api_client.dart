@@ -16,7 +16,6 @@ class ApiClient {
 
   Map<String, String> _baseHeaders({String? token}) => {
         'Content-Type': 'application/json',
-        'x-api-key': AppConfig.apiKey,
         if (token != null) 'Authorization': 'Bearer $token',
       };
 

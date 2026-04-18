@@ -38,6 +38,8 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
                   Expanded(child: _buildProgressSegment(true)),
                   const SizedBox(width: 8),
                   Expanded(child: _buildProgressSegment(true)),
+                  const SizedBox(width: 8),
+                  Expanded(child: _buildProgressSegment(true)),
                 ],
               ),
               const SizedBox(height: 48),
@@ -78,7 +80,7 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'per day · 3 meals',
+                      _getBudgetSubtitle(),
                       style: GoogleFonts.inter(
                         fontSize: 14,
                         color: AppColors.onboardingTextSecondary,
@@ -92,7 +94,7 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
                         inactiveTrackColor: Colors.white.withValues(alpha: 0.1),
                         thumbColor: AppColors.primary,
                         overlayColor: AppColors.primary.withValues(alpha: 0.2),
-                        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 0),
+                        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 12),
                         trackShape: const RoundedRectSliderTrackShape(),
                       ),
                       child: Slider(
@@ -100,24 +102,6 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
                         min: 100,
                         max: 1000,
                         onChanged: (value) => setState(() => budget = value),
-                      ),
-                    ),
-                    Container(
-                      height: 8,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: FractionallySizedBox(
-                        alignment: Alignment.centerLeft,
-                        widthFactor: (budget - 100) / 900,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: AppColors.primary,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ),
                       ),
                     ),
                   ],
@@ -229,6 +213,12 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
         ),
       ),
     );
+  }
+
+  String _getBudgetSubtitle() {
+    int mealCount = selectedMealCount == '3 meals a day' ? 3 : 2;
+    int mealBudget = (budget / mealCount).toInt();
+    return 'KSh $mealBudget per meal · $selectedMealCount';
   }
 
   Widget _buildProgressSegment(bool active) {

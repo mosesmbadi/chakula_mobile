@@ -17,11 +17,7 @@ const OnboardingDataSchema = CollectionSchema(
   name: r'OnboardingData',
   id: -6354398654708067484,
   properties: {
-    r'county': PropertySchema(
-      id: 0,
-      name: r'county',
-      type: IsarType.string,
-    ),
+    r'county': PropertySchema(id: 0, name: r'county', type: IsarType.string),
     r'dailyBudget': PropertySchema(
       id: 1,
       name: r'dailyBudget',
@@ -32,22 +28,15 @@ const OnboardingDataSchema = CollectionSchema(
       name: r'dietaryGoals',
       type: IsarType.stringList,
     ),
-    r'name': PropertySchema(
-      id: 3,
-      name: r'name',
-      type: IsarType.string,
-    ),
-    r'region': PropertySchema(
-      id: 4,
-      name: r'region',
-      type: IsarType.string,
-    ),
+    r'name': PropertySchema(id: 3, name: r'name', type: IsarType.string),
+    r'region': PropertySchema(id: 4, name: r'region', type: IsarType.string),
     r'subRegion': PropertySchema(
       id: 5,
       name: r'subRegion',
       type: IsarType.string,
-    )
+    ),
   },
+
   estimateSize: _onboardingDataEstimateSize,
   serialize: _onboardingDataSerialize,
   deserialize: _onboardingDataDeserialize,
@@ -56,10 +45,11 @@ const OnboardingDataSchema = CollectionSchema(
   indexes: {},
   links: {},
   embeddedSchemas: {},
+
   getId: _onboardingDataGetId,
   getLinks: _onboardingDataGetLinks,
   attach: _onboardingDataAttach,
-  version: '3.1.0+1',
+  version: '3.3.2',
 );
 
 int _onboardingDataEstimateSize(
@@ -147,7 +137,10 @@ List<IsarLinkBase<dynamic>> _onboardingDataGetLinks(OnboardingData object) {
 }
 
 void _onboardingDataAttach(
-    IsarCollection<dynamic> col, Id id, OnboardingData object) {
+  IsarCollection<dynamic> col,
+  Id id,
+  OnboardingData object,
+) {
   object.id = id;
 }
 
@@ -163,17 +156,16 @@ extension OnboardingDataQueryWhereSort
 extension OnboardingDataQueryWhere
     on QueryBuilder<OnboardingData, OnboardingData, QWhereClause> {
   QueryBuilder<OnboardingData, OnboardingData, QAfterWhereClause> idEqualTo(
-      Id id) {
+    Id id,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: id,
-        upper: id,
-      ));
+      return query.addWhereClause(IdWhereClause.between(lower: id, upper: id));
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterWhereClause> idNotEqualTo(
-      Id id) {
+    Id id,
+  ) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -196,8 +188,9 @@ extension OnboardingDataQueryWhere
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterWhereClause> idGreaterThan(
-      Id id,
-      {bool include = false}) {
+    Id id, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.greaterThan(lower: id, includeLower: include),
@@ -206,8 +199,9 @@ extension OnboardingDataQueryWhere
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterWhereClause> idLessThan(
-      Id id,
-      {bool include = false}) {
+    Id id, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.lessThan(upper: id, includeUpper: include),
@@ -222,12 +216,14 @@ extension OnboardingDataQueryWhere
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: lowerId,
-        includeLower: includeLower,
-        upper: upperId,
-        includeUpper: includeUpper,
-      ));
+      return query.addWhereClause(
+        IdWhereClause.between(
+          lower: lowerId,
+          includeLower: includeLower,
+          upper: upperId,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 }
@@ -235,53 +231,56 @@ extension OnboardingDataQueryWhere
 extension OnboardingDataQueryFilter
     on QueryBuilder<OnboardingData, OnboardingData, QFilterCondition> {
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      countyEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  countyEqualTo(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'county',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'county',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      countyGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'county',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      countyLessThan(
+  countyGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'county',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'county',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      countyBetween(
+  countyLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'county',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
+  countyBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -289,191 +288,195 @@ extension OnboardingDataQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'county',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'county',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      countyStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  countyStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'county',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'county',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      countyEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  countyEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'county',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'county',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      countyContains(String value, {bool caseSensitive = true}) {
+  countyContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'county',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'county',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      countyMatches(String pattern, {bool caseSensitive = true}) {
+  countyMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'county',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'county',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      countyIsEmpty() {
+  countyIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'county',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'county', value: ''),
+      );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      countyIsNotEmpty() {
+  countyIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'county',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'county', value: ''),
+      );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      dailyBudgetEqualTo(int value) {
+  dailyBudgetEqualTo(int value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'dailyBudget',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'dailyBudget', value: value),
+      );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      dailyBudgetGreaterThan(
-    int value, {
-    bool include = false,
-  }) {
+  dailyBudgetGreaterThan(int value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'dailyBudget',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'dailyBudget',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      dailyBudgetLessThan(
-    int value, {
-    bool include = false,
-  }) {
+  dailyBudgetLessThan(int value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'dailyBudget',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'dailyBudget',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      dailyBudgetBetween(
+  dailyBudgetBetween(
     int lower,
     int upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'dailyBudget',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'dailyBudget',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      dietaryGoalsElementEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  dietaryGoalsElementEqualTo(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'dietaryGoals',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'dietaryGoals',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      dietaryGoalsElementGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'dietaryGoals',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      dietaryGoalsElementLessThan(
+  dietaryGoalsElementGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'dietaryGoals',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'dietaryGoals',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      dietaryGoalsElementBetween(
+  dietaryGoalsElementLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'dietaryGoals',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
+  dietaryGoalsElementBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -481,160 +484,126 @@ extension OnboardingDataQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'dietaryGoals',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      dietaryGoalsElementStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'dietaryGoals',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      dietaryGoalsElementEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'dietaryGoals',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      dietaryGoalsElementContains(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'dietaryGoals',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      dietaryGoalsElementMatches(String pattern, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'dietaryGoals',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      dietaryGoalsElementIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'dietaryGoals',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      dietaryGoalsElementIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'dietaryGoals',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      dietaryGoalsLengthEqualTo(int length) {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'dietaryGoals',
-        length,
-        true,
-        length,
-        true,
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'dietaryGoals',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      dietaryGoalsIsEmpty() {
+  dietaryGoalsElementStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'dietaryGoals',
-        0,
-        true,
-        0,
-        true,
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'dietaryGoals',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      dietaryGoalsIsNotEmpty() {
+  dietaryGoalsElementEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'dietaryGoals',
-        0,
-        false,
-        999999,
-        true,
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'dietaryGoals',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      dietaryGoalsLengthLessThan(
-    int length, {
-    bool include = false,
-  }) {
+  dietaryGoalsElementContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'dietaryGoals',
-        0,
-        true,
-        length,
-        include,
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'dietaryGoals',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      dietaryGoalsLengthGreaterThan(
-    int length, {
-    bool include = false,
-  }) {
+  dietaryGoalsElementMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'dietaryGoals',
-        length,
-        include,
-        999999,
-        true,
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'dietaryGoals',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      dietaryGoalsLengthBetween(
+  dietaryGoalsElementIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'dietaryGoals', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
+  dietaryGoalsElementIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'dietaryGoals', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
+  dietaryGoalsLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(r'dietaryGoals', length, true, length, true);
+    });
+  }
+
+  QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
+  dietaryGoalsIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(r'dietaryGoals', 0, true, 0, true);
+    });
+  }
+
+  QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
+  dietaryGoalsIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(r'dietaryGoals', 0, false, 999999, true);
+    });
+  }
+
+  QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
+  dietaryGoalsLengthLessThan(int length, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(r'dietaryGoals', 0, true, length, include);
+    });
+  }
+
+  QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
+  dietaryGoalsLengthGreaterThan(int length, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(r'dietaryGoals', length, include, 999999, true);
+    });
+  }
+
+  QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
+  dietaryGoalsLengthBetween(
     int lower,
     int upper, {
     bool includeLower = true,
@@ -652,58 +621,56 @@ extension OnboardingDataQueryFilter
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      idIsNull() {
+  idIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'id',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'id'),
+      );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      idIsNotNull() {
+  idIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'id',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'id'),
+      );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition> idEqualTo(
-      Id? value) {
+    Id? value,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'id',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'id', value: value),
+      );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      idGreaterThan(
-    Id? value, {
-    bool include = false,
-  }) {
+  idGreaterThan(Id? value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'id',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'id',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      idLessThan(
-    Id? value, {
-    bool include = false,
-  }) {
+  idLessThan(Id? value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'id',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'id',
+          value: value,
+        ),
+      );
     });
   }
 
@@ -714,64 +681,69 @@ extension OnboardingDataQueryFilter
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'id',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'id',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      nameEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  nameEqualTo(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'name',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'name',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      nameGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'name',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      nameLessThan(
+  nameGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'name',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'name',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      nameBetween(
+  nameLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'name',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
+  nameBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -779,135 +751,140 @@ extension OnboardingDataQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'name',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'name',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      nameStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  nameStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'name',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'name',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      nameEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  nameEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'name',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'name',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      nameContains(String value, {bool caseSensitive = true}) {
+  nameContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'name',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'name',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      nameMatches(String pattern, {bool caseSensitive = true}) {
+  nameMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'name',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'name',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      nameIsEmpty() {
+  nameIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'name',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'name', value: ''),
+      );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      nameIsNotEmpty() {
+  nameIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'name',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'name', value: ''),
+      );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      regionEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  regionEqualTo(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'region',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'region',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      regionGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'region',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      regionLessThan(
+  regionGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'region',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'region',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      regionBetween(
+  regionLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'region',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
+  regionBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -915,135 +892,140 @@ extension OnboardingDataQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'region',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'region',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      regionStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  regionStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'region',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'region',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      regionEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  regionEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'region',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'region',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      regionContains(String value, {bool caseSensitive = true}) {
+  regionContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'region',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'region',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      regionMatches(String pattern, {bool caseSensitive = true}) {
+  regionMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'region',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'region',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      regionIsEmpty() {
+  regionIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'region',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'region', value: ''),
+      );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      regionIsNotEmpty() {
+  regionIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'region',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'region', value: ''),
+      );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      subRegionEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  subRegionEqualTo(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'subRegion',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'subRegion',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      subRegionGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'subRegion',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      subRegionLessThan(
+  subRegionGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'subRegion',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'subRegion',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      subRegionBetween(
+  subRegionLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'subRegion',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
+  subRegionBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -1051,84 +1033,86 @@ extension OnboardingDataQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'subRegion',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'subRegion',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      subRegionStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  subRegionStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'subRegion',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'subRegion',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      subRegionEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  subRegionEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'subRegion',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'subRegion',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      subRegionContains(String value, {bool caseSensitive = true}) {
+  subRegionContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'subRegion',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'subRegion',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      subRegionMatches(String pattern, {bool caseSensitive = true}) {
+  subRegionMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'subRegion',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'subRegion',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      subRegionIsEmpty() {
+  subRegionIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'subRegion',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'subRegion', value: ''),
+      );
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterFilterCondition>
-      subRegionIsNotEmpty() {
+  subRegionIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'subRegion',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'subRegion', value: ''),
+      );
     });
   }
 }
@@ -1148,21 +1132,21 @@ extension OnboardingDataQuerySortBy
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterSortBy>
-      sortByCountyDesc() {
+  sortByCountyDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'county', Sort.desc);
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterSortBy>
-      sortByDailyBudget() {
+  sortByDailyBudget() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'dailyBudget', Sort.asc);
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterSortBy>
-      sortByDailyBudgetDesc() {
+  sortByDailyBudgetDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'dailyBudget', Sort.desc);
     });
@@ -1187,7 +1171,7 @@ extension OnboardingDataQuerySortBy
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterSortBy>
-      sortByRegionDesc() {
+  sortByRegionDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'region', Sort.desc);
     });
@@ -1200,7 +1184,7 @@ extension OnboardingDataQuerySortBy
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterSortBy>
-      sortBySubRegionDesc() {
+  sortBySubRegionDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'subRegion', Sort.desc);
     });
@@ -1216,21 +1200,21 @@ extension OnboardingDataQuerySortThenBy
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterSortBy>
-      thenByCountyDesc() {
+  thenByCountyDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'county', Sort.desc);
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterSortBy>
-      thenByDailyBudget() {
+  thenByDailyBudget() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'dailyBudget', Sort.asc);
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterSortBy>
-      thenByDailyBudgetDesc() {
+  thenByDailyBudgetDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'dailyBudget', Sort.desc);
     });
@@ -1267,7 +1251,7 @@ extension OnboardingDataQuerySortThenBy
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterSortBy>
-      thenByRegionDesc() {
+  thenByRegionDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'region', Sort.desc);
     });
@@ -1280,7 +1264,7 @@ extension OnboardingDataQuerySortThenBy
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QAfterSortBy>
-      thenBySubRegionDesc() {
+  thenBySubRegionDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'subRegion', Sort.desc);
     });
@@ -1289,43 +1273,47 @@ extension OnboardingDataQuerySortThenBy
 
 extension OnboardingDataQueryWhereDistinct
     on QueryBuilder<OnboardingData, OnboardingData, QDistinct> {
-  QueryBuilder<OnboardingData, OnboardingData, QDistinct> distinctByCounty(
-      {bool caseSensitive = true}) {
+  QueryBuilder<OnboardingData, OnboardingData, QDistinct> distinctByCounty({
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'county', caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QDistinct>
-      distinctByDailyBudget() {
+  distinctByDailyBudget() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'dailyBudget');
     });
   }
 
   QueryBuilder<OnboardingData, OnboardingData, QDistinct>
-      distinctByDietaryGoals() {
+  distinctByDietaryGoals() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'dietaryGoals');
     });
   }
 
-  QueryBuilder<OnboardingData, OnboardingData, QDistinct> distinctByName(
-      {bool caseSensitive = true}) {
+  QueryBuilder<OnboardingData, OnboardingData, QDistinct> distinctByName({
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'name', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<OnboardingData, OnboardingData, QDistinct> distinctByRegion(
-      {bool caseSensitive = true}) {
+  QueryBuilder<OnboardingData, OnboardingData, QDistinct> distinctByRegion({
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'region', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<OnboardingData, OnboardingData, QDistinct> distinctBySubRegion(
-      {bool caseSensitive = true}) {
+  QueryBuilder<OnboardingData, OnboardingData, QDistinct> distinctBySubRegion({
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'subRegion', caseSensitive: caseSensitive);
     });
@@ -1353,7 +1341,7 @@ extension OnboardingDataQueryProperty
   }
 
   QueryBuilder<OnboardingData, List<String>, QQueryOperations>
-      dietaryGoalsProperty() {
+  dietaryGoalsProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'dietaryGoals');
     });

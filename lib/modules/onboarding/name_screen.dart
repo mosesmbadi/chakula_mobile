@@ -38,6 +38,8 @@ class _NameScreenState extends ConsumerState<NameScreen> {
                   Expanded(child: _buildProgressSegment(false)),
                   const SizedBox(width: 8),
                   Expanded(child: _buildProgressSegment(false)),
+                  const SizedBox(width: 8),
+                  Expanded(child: _buildProgressSegment(false)),
                 ],
               ),
               const SizedBox(height: 48),
@@ -92,7 +94,7 @@ class _NameScreenState extends ConsumerState<NameScreen> {
                     onPressed: () {
                       if (_nameController.text.isNotEmpty) {
                         ref.read(onboardingProvider.notifier).setName(_nameController.text);
-                        Navigator.pushNamed(context, '/location');
+                        Navigator.pushNamed(context, '/country');
                       }
                     },
                     style: ElevatedButton.styleFrom(

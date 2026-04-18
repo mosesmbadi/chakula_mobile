@@ -60,6 +60,8 @@ class _LocationScreenState extends ConsumerState<LocationScreen> {
                   const SizedBox(width: 8),
                   Expanded(child: _buildProgressSegment(true)),
                   const SizedBox(width: 8),
+                  Expanded(child: _buildProgressSegment(true)),
+                  const SizedBox(width: 8),
                   Expanded(child: _buildProgressSegment(false)),
                 ],
               ),
@@ -248,7 +250,7 @@ class _LocationScreenState extends ConsumerState<LocationScreen> {
                         : () {
                             ref.read(onboardingProvider.notifier).setLocation(
                                   county: selectedLocation!,
-                                  region: 'kenya',
+                                  region: ref.read(onboardingProvider).country,
                                   subRegion: selectedLocation!
                                       .toLowerCase()
                                       .replaceAll(' ', '_'),
