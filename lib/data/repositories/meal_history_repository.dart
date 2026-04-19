@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api_client.dart';
-import '../models/meal.dart';
+import '../models/meal_history_item.dart';
 
 final mealHistoryRepositoryProvider = Provider<MealHistoryRepository>((ref) {
   return MealHistoryRepository(ref.read(apiClientProvider));
@@ -11,7 +11,7 @@ class MealHistoryRepository {
 
   MealHistoryRepository(this._client);
 
-  Future<List<Meal>> fetchMealHistory({
+  Future<List<MealHistoryItem>> fetchMealHistory({
     String? region,
     String? subRegion,
     int page = 1,
@@ -31,10 +31,10 @@ class MealHistoryRepository {
       authenticated: authenticated,
     );
 
-    final rawList = (data['data'] ?? data['meals'] ?? data) as List?;
+    final rawList = data['data'] as List?;
     if (rawList == null) return [];
     return rawList
-        .map((item) => Meal.fromJson(item as Map<String, dynamic>))
+        .map((item) => MealHistoryItem.fromJson(item as Map<String, dynamic>))
         .toList();
   }
 
