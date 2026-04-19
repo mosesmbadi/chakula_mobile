@@ -53,7 +53,9 @@ class MealHistoryItem {
       region: json['region'] as String?,
       subRegion: json['subregion'] as String?,
       notes: json['notes'] as String?,
-      eatenAt: DateTime.tryParse(json['eaten_at'] as String? ?? '') ?? DateTime.now(),
+      eatenAt:
+          DateTime.tryParse(json['eaten_at'] as String? ?? '') ??
+          DateTime.now(),
     );
   }
 }

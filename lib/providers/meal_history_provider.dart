@@ -34,8 +34,8 @@ class MealHistoryState {
 
 final mealHistoryProvider =
     AsyncNotifierProvider.autoDispose<MealHistoryNotifier, MealHistoryState>(
-  MealHistoryNotifier.new,
-);
+      MealHistoryNotifier.new,
+    );
 
 class MealHistoryNotifier extends AutoDisposeAsyncNotifier<MealHistoryState> {
   static const _limit = 20;
@@ -55,7 +55,9 @@ class MealHistoryNotifier extends AutoDisposeAsyncNotifier<MealHistoryState> {
     String? region,
     String? subRegion,
   }) async {
-    final meals = await ref.read(mealHistoryRepositoryProvider).fetchMealHistory(
+    final meals = await ref
+        .read(mealHistoryRepositoryProvider)
+        .fetchMealHistory(
           region: region,
           subRegion: subRegion,
           page: page,
@@ -82,7 +84,9 @@ class MealHistoryNotifier extends AutoDisposeAsyncNotifier<MealHistoryState> {
       final subRegion = filter.subRegion;
 
       final nextPage = current.page + 1;
-      final more = await ref.read(mealHistoryRepositoryProvider).fetchMealHistory(
+      final more = await ref
+          .read(mealHistoryRepositoryProvider)
+          .fetchMealHistory(
             region: region,
             subRegion: subRegion,
             page: nextPage,
@@ -90,12 +94,14 @@ class MealHistoryNotifier extends AutoDisposeAsyncNotifier<MealHistoryState> {
             authenticated: _isAuthenticated,
           );
 
-      state = AsyncData(current.copyWith(
-        meals: [...current.meals, ...more],
-        page: nextPage,
-        hasMore: more.length >= _limit,
-        isLoadingMore: false,
-      ));
+      state = AsyncData(
+        current.copyWith(
+          meals: [...current.meals, ...more],
+          page: nextPage,
+          hasMore: more.length >= _limit,
+          isLoadingMore: false,
+        ),
+      );
     } catch (_) {
       state = AsyncData(current.copyWith(isLoadingMore: false));
     }
@@ -106,11 +112,13 @@ class MealHistoryNotifier extends AutoDisposeAsyncNotifier<MealHistoryState> {
     if (current == null) return;
 
     // Optimistic increment.
-    state = AsyncData(current.copyWith(
-      meals: current.meals
-          .map((m) => m.id == mealId ? m.copyWith(upvotes: m.upvotes + 1) : m)
-          .toList(),
-    ));
+    state = AsyncData(
+      current.copyWith(
+        meals: current.meals
+            .map((m) => m.id == mealId ? m.copyWith(upvotes: m.upvotes + 1) : m)
+            .toList(),
+      ),
+    );
 
     try {
       await ref.read(mealHistoryRepositoryProvider).upvote(mealId);
@@ -125,9 +133,11 @@ class MealHistoryNotifier extends AutoDisposeAsyncNotifier<MealHistoryState> {
     if (current == null) return;
 
     // Optimistic remove.
-    state = AsyncData(current.copyWith(
-      meals: current.meals.where((m) => m.id != mealId).toList(),
-    ));
+    state = AsyncData(
+      current.copyWith(
+        meals: current.meals.where((m) => m.id != mealId).toList(),
+      ),
+    );
 
     try {
       await ref.read(mealHistoryRepositoryProvider).downvote(mealId);
@@ -135,5 +145,27 @@ class MealHistoryNotifier extends AutoDisposeAsyncNotifier<MealHistoryState> {
       // Restore on failure.
       state = AsyncData(current);
     }
+  }
+
+  Future<void> logMeal({
+    required String mealName,
+    required double cost,
+    String currency = 'KES',
+    double? userCost,
+    String? notes,
+    String? recipeTitle,
+    String? recipeInstructions,
+  }) async {
+    await ref.read(mealHistoryRepositoryProvider).logMeal(
+      mealName: mealName,
+      cost: cost,
+      currency: currency,
+      userCost: userCost,
+      notes: notes,
+      recipeTitle: recipeTitle,
+      recipeInstructions: recipeInstructions,
+    );
+    // Refresh the feed so the new entry appears.
+    ref.invalidateSelf();
   }
 }

@@ -38,14 +38,38 @@ class MealHistoryRepository {
         .toList();
   }
 
+  Future<void> logMeal({
+    required String mealName,
+    required double cost,
+    String currency = 'KES',
+    double? userCost,
+    String? notes,
+    String? recipeTitle,
+    String? recipeInstructions,
+  }) async {
+    await _client.post(
+      '/users/meal-history',
+      body: {
+        'mealName': mealName,
+        'cost': cost,
+        'currency': currency,
+        'userCost': userCost ?? cost,
+        'rating': null,
+        if (notes != null && notes.isNotEmpty) 'notes': notes,
+        if (recipeInstructions != null && recipeInstructions.isNotEmpty)
+          'recipe': {
+            if (recipeTitle != null && recipeTitle.isNotEmpty) 'title': recipeTitle,
+            'instructions': recipeInstructions,
+          },
+      },
+    );
+  }
+
   Future<void> upvote(String mealId) async {
     await _client.put('/meal-history/$mealId/upvote');
   }
 
   Future<void> downvote(String mealId) async {
-    await _client.post(
-      '/meal-history/$mealId/downvote',
-      body: {},
-    );
+    await _client.post('/meal-history/$mealId/downvote', body: {});
   }
 }

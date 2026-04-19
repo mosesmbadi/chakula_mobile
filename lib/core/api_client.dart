@@ -16,21 +16,24 @@ class ApiClient {
   final _storage = const FlutterSecureStorage();
 
   Map<String, String> _baseHeaders({String? token}) => {
-        'Content-Type': 'application/json',
-        if (token != null) 'Authorization': 'Bearer $token',
-      };
+    'Content-Type': 'application/json',
+    if (token != null) 'Authorization': 'Bearer $token',
+  };
 
   Future<Map<String, dynamic>> get(
     String path, {
     Map<String, String>? queryParams,
     bool authenticated = true,
   }) async {
-    final token = authenticated ? await _storage.read(key: _accessTokenKey) : null;
-    final uri = Uri.parse('${AppConfig.apiBaseUrl}$path')
-        .replace(queryParameters: queryParams);
+    final token = authenticated
+        ? await _storage.read(key: _accessTokenKey)
+        : null;
+    final uri = Uri.parse(
+      '${AppConfig.apiBaseUrl}$path',
+    ).replace(queryParameters: queryParams);
 
     debugPrint('[ApiClient] GET: $uri');
-    
+
     final response = await http
         .get(uri, headers: _baseHeaders(token: token))
         .timeout(_timeout);
@@ -47,11 +50,17 @@ class ApiClient {
     required Map<String, dynamic> body,
     bool authenticated = true,
   }) async {
-    final token = authenticated ? await _storage.read(key: _accessTokenKey) : null;
+    final token = authenticated
+        ? await _storage.read(key: _accessTokenKey)
+        : null;
     final uri = Uri.parse('${AppConfig.apiBaseUrl}$path');
 
     final response = await http
-        .post(uri, headers: _baseHeaders(token: token), body: jsonEncode(body))
+        .post(
+          uri,
+          headers: _baseHeaders(token: token),
+          body: jsonEncode(body),
+        )
         .timeout(_timeout);
 
     if (response.statusCode == 401 && authenticated) {
@@ -66,11 +75,17 @@ class ApiClient {
     Map<String, dynamic> body = const {},
     bool authenticated = true,
   }) async {
-    final token = authenticated ? await _storage.read(key: _accessTokenKey) : null;
+    final token = authenticated
+        ? await _storage.read(key: _accessTokenKey)
+        : null;
     final uri = Uri.parse('${AppConfig.apiBaseUrl}$path');
 
     final response = await http
-        .put(uri, headers: _baseHeaders(token: token), body: jsonEncode(body))
+        .put(
+          uri,
+          headers: _baseHeaders(token: token),
+          body: jsonEncode(body),
+        )
         .timeout(_timeout);
 
     if (response.statusCode == 401 && authenticated) {
@@ -91,16 +106,20 @@ class ApiClient {
     if (token != null) request.headers['Authorization'] = 'Bearer $token';
     request.fields.addAll(fields);
     if (imagePath != null) {
-      request.files.add(await http.MultipartFile.fromPath(
-        'image',
-        imagePath,
-        contentType: MediaType.parse(_mimeTypeFromPath(imagePath)),
-      ));
+      request.files.add(
+        await http.MultipartFile.fromPath(
+          'image',
+          imagePath,
+          contentType: MediaType.parse(_mimeTypeFromPath(imagePath)),
+        ),
+      );
     }
     final streamed = await request.send().timeout(_timeout);
     final response = await http.Response.fromStream(streamed);
     if (response.statusCode == 401) {
-      return _refreshAndRetry(() => postMultipart(path, fields: fields, imagePath: imagePath));
+      return _refreshAndRetry(
+        () => postMultipart(path, fields: fields, imagePath: imagePath),
+      );
     }
     return _parseResponse(response);
   }
@@ -109,22 +128,31 @@ class ApiClient {
     Future<Map<String, dynamic>> Function() retry,
   ) async {
     final refreshToken = await _storage.read(key: _refreshTokenKey);
-    if (refreshToken == null) throw ApiException(401, 'Session expired. Please log in again.');
+    if (refreshToken == null)
+      throw ApiException(401, 'Session expired. Please log in again.');
 
     final refreshUri = Uri.parse('${AppConfig.apiBaseUrl}/users/refresh/');
-    final refreshResponse = await http.post(
-      refreshUri,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'refreshToken': refreshToken}),
-    ).timeout(_timeout);
+    final refreshResponse = await http
+        .post(
+          refreshUri,
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({'refreshToken': refreshToken}),
+        )
+        .timeout(_timeout);
 
     if (refreshResponse.statusCode != 200) {
       throw ApiException(401, 'Session expired. Please log in again.');
     }
 
     final data = jsonDecode(refreshResponse.body);
-    await _storage.write(key: _accessTokenKey, value: data['accessToken'] as String);
-    await _storage.write(key: _refreshTokenKey, value: data['refreshToken'] as String);
+    await _storage.write(
+      key: _accessTokenKey,
+      value: data['accessToken'] as String,
+    );
+    await _storage.write(
+      key: _refreshTokenKey,
+      value: data['refreshToken'] as String,
+    );
 
     return retry();
   }

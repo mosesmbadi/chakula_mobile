@@ -158,10 +158,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final imagePath = await _promptForPhoto();
     if (!mounted) return;
 
+    final recipe = await _promptForRecipe(meal);
+    if (!mounted) return;
+
     setState(() => _isAccepting = true);
     final error = await ref
         .read(recommendationsProvider.notifier)
-        .acceptMeal(_mealType, [meal], userCost: userCost, imagePath: imagePath);
+        .acceptMeal(
+          _mealType,
+          [meal],
+          userCost: userCost,
+          imagePath: imagePath,
+          recipeTitle: recipe?['title'],
+          recipeInstructions: recipe?['instructions'],
+        );
     if (!mounted) return;
     setState(() => _isAccepting = false);
 
@@ -262,6 +272,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return imagePath;
   }
 
+  Future<Map<String, String>?> _promptForRecipe(Meal meal) {
+    return showModalBottomSheet<Map<String, String>>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) => _RecipeSheet(mealName: meal.name),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -760,6 +781,184 @@ class _UserCostSheetState extends State<_UserCostSheet> {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ── Recipe sheet (optional step when accepting a recommendation) ─────────────
+
+class _RecipeSheet extends StatefulWidget {
+  final String mealName;
+  const _RecipeSheet({required this.mealName});
+
+  @override
+  State<_RecipeSheet> createState() => _RecipeSheetState();
+}
+
+class _RecipeSheetState extends State<_RecipeSheet> {
+  final _formKey = GlobalKey<FormState>();
+  final _titleCtrl = TextEditingController();
+  final _instructionsCtrl = TextEditingController();
+
+  @override
+  void dispose() {
+    _titleCtrl.dispose();
+    _instructionsCtrl.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+    Navigator.pop(context, {
+      if (_titleCtrl.text.trim().isNotEmpty) 'title': _titleCtrl.text.trim(),
+      'instructions': _instructionsCtrl.text.trim(),
+    });
+  }
+
+  InputDecoration _dec(String hint) => InputDecoration(
+        hintText: hint,
+        hintStyle: GoogleFonts.inter(
+          fontSize: 14,
+          color: AppColors.textSecondary.withValues(alpha: 0.6),
+        ),
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.1)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.1)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.accent),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.toastError),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.toastError),
+        ),
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(24, 20, 24, 36),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Add a recipe?',
+                      style: GoogleFonts.inter(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Share how to make ${widget.mealName}. This is optional.',
+                style: GoogleFonts.inter(fontSize: 14, color: AppColors.textSecondary),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'Recipe title (optional)',
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _titleCtrl,
+                textCapitalization: TextCapitalization.sentences,
+                decoration: _dec('e.g. Classic ${widget.mealName}'),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Instructions *',
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _instructionsCtrl,
+                maxLines: 6,
+                textCapitalization: TextCapitalization.sentences,
+                decoration: _dec('Step-by-step cooking instructions…'),
+                validator: (v) => (v == null || v.trim().isEmpty)
+                    ? 'Instructions are required'
+                    : null,
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.textSecondary,
+                        side: BorderSide(color: Colors.black.withValues(alpha: 0.15)),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      child: Text('Skip', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    flex: 2,
+                    child: ElevatedButton(
+                      onPressed: _submit,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.accent,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        'Add recipe',
+                        style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

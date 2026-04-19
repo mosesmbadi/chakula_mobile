@@ -38,11 +38,21 @@ class Meal {
     );
   }
 
-  Map<String, dynamic> toAcceptPayload({int? userCost}) => {
+  Map<String, dynamic> toAcceptPayload({
+    int? userCost,
+    String? recipeTitle,
+    String? recipeInstructions,
+  }) =>
+      {
         'food_id': id,
         'food_name': name,
         'cost': priceMinKes,
         if (userCost != null) 'user_cost': userCost,
         'currency': 'KES',
+        if (recipeInstructions != null && recipeInstructions.isNotEmpty)
+          'recipe': {
+            if (recipeTitle != null && recipeTitle.isNotEmpty) 'title': recipeTitle,
+            'instructions': recipeInstructions,
+          },
       };
 }

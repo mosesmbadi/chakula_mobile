@@ -74,12 +74,22 @@ class RecommendationsRepository {
     required List<Meal> foods,
     int? userCost,
     String? imagePath,
+    String? recipeTitle,
+    String? recipeInstructions,
   }) async {
     await _client.postMultipart(
       '/recommendations/accept',
       fields: {
         'mealType': mealType,
-        'foods': jsonEncode(foods.map((f) => f.toAcceptPayload(userCost: userCost)).toList()),
+        'foods': jsonEncode(
+          foods
+              .map((f) => f.toAcceptPayload(
+                    userCost: userCost,
+                    recipeTitle: recipeTitle,
+                    recipeInstructions: recipeInstructions,
+                  ))
+              .toList(),
+        ),
       },
       imagePath: imagePath,
     );

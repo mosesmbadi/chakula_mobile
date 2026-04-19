@@ -6,6 +6,7 @@ import '../../core/counties_data.dart';
 import '../../data/models/meal_history_item.dart';
 import '../../providers/meal_history_filter_provider.dart';
 import '../../providers/meal_history_provider.dart';
+import '../../widgets/app_toast.dart';
 
 class DiscoverScreen extends ConsumerStatefulWidget {
   const DiscoverScreen({super.key});
@@ -47,6 +48,18 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (_) => const _FilterSheet(),
+    );
+  }
+
+  void _showLogMealSheet() {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) => const _LogMealSheet(),
     );
   }
 
@@ -95,7 +108,10 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.primary.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(20),
@@ -125,18 +141,28 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
                               const SizedBox(width: 8),
                               _buildActiveChip(
                                 filter.region!,
-                                onRemove: () => ref
-                                    .read(mealHistoryFilterProvider.notifier)
-                                    .state = filter.copyWith(clearRegion: true),
+                                onRemove: () =>
+                                    ref
+                                        .read(
+                                          mealHistoryFilterProvider.notifier,
+                                        )
+                                        .state = filter.copyWith(
+                                      clearRegion: true,
+                                    ),
                               ),
                             ],
                             if (filter.subRegion != null) ...[
                               const SizedBox(width: 8),
                               _buildActiveChip(
                                 filter.subRegion!,
-                                onRemove: () => ref
-                                    .read(mealHistoryFilterProvider.notifier)
-                                    .state = filter.copyWith(clearSubRegion: true),
+                                onRemove: () =>
+                                    ref
+                                        .read(
+                                          mealHistoryFilterProvider.notifier,
+                                        )
+                                        .state = filter.copyWith(
+                                      clearSubRegion: true,
+                                    ),
                               ),
                             ],
                           ],
@@ -157,7 +183,10 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
                   child: Center(
                     child: Text(
                       'No meals found in this area',
-                      style: GoogleFonts.inter(fontSize: 16, color: AppColors.textSecondary),
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                   ),
                 );
@@ -166,23 +195,20 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
               return SliverPadding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      if (index == historyState.meals.length) {
-                        return historyState.isLoadingMore
-                            ? const Padding(
-                                padding: EdgeInsets.symmetric(vertical: 24),
-                                child: Center(child: CircularProgressIndicator()),
-                              )
-                            : const SizedBox(height: 24);
-                      }
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        child: _buildMealCard(historyState.meals[index]),
-                      );
-                    },
-                    childCount: historyState.meals.length + 1,
-                  ),
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    if (index == historyState.meals.length) {
+                      return historyState.isLoadingMore
+                          ? const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 24),
+                              child: Center(child: CircularProgressIndicator()),
+                            )
+                          : const SizedBox(height: 24);
+                    }
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: _buildMealCard(historyState.meals[index]),
+                    );
+                  }, childCount: historyState.meals.length + 1),
                 ),
               );
             },
@@ -209,7 +235,9 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+                  border: Border.all(
+                    color: Colors.black.withValues(alpha: 0.05),
+                  ),
                 ),
                 child: Row(
                   children: [
@@ -237,17 +265,25 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
                       ),
                     ),
                     ElevatedButton(
-                      onPressed: () {},
+                      onPressed: _showLogMealSheet,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.accent,
                         foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                         elevation: 0,
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 16,
+                        ),
                       ),
                       child: Text(
                         '+ Add',
-                        style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold),
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ],
@@ -329,9 +365,10 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
   Widget _buildMealCard(MealHistoryItem meal) {
     final date = meal.eatenAt;
     final dateLabel = '${date.day}/${date.month}/${date.year}';
-    final location = [meal.subRegion, meal.region]
-        .where((s) => s != null && s.isNotEmpty)
-        .join(', ');
+    final location = [
+      meal.subRegion,
+      meal.region,
+    ].where((s) => s != null && s.isNotEmpty).join(', ');
 
     return Container(
       width: double.infinity,
@@ -358,7 +395,10 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
@@ -378,20 +418,34 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
           Row(
             children: [
               if (meal.userName != null && meal.userName!.isNotEmpty) ...[
-                Icon(Icons.person_outline, size: 14, color: AppColors.textSecondary),
+                Icon(
+                  Icons.person_outline,
+                  size: 14,
+                  color: AppColors.textSecondary,
+                ),
                 const SizedBox(width: 4),
                 Text(
                   meal.userName!,
-                  style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary),
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
                 const SizedBox(width: 12),
               ],
               if (location.isNotEmpty) ...[
-                Icon(Icons.location_on_outlined, size: 14, color: AppColors.textSecondary),
+                Icon(
+                  Icons.location_on_outlined,
+                  size: 14,
+                  color: AppColors.textSecondary,
+                ),
                 const SizedBox(width: 4),
                 Text(
                   location,
-                  style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary),
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
                 const SizedBox(width: 12),
               ],
@@ -399,7 +453,10 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
               const SizedBox(width: 4),
               Text(
                 dateLabel,
-                style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary),
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  color: AppColors.textSecondary,
+                ),
               ),
             ],
           ),
@@ -407,7 +464,11 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
             const SizedBox(height: 10),
             Text(
               meal.notes!,
-              style: GoogleFonts.inter(fontSize: 14, color: AppColors.textSecondary, height: 1.4),
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                color: AppColors.textSecondary,
+                height: 1.4,
+              ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
@@ -416,14 +477,22 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
           Row(
             children: [
               GestureDetector(
-                onTap: () => ref.read(mealHistoryProvider.notifier).upvote(meal.id),
+                onTap: () =>
+                    ref.read(mealHistoryProvider.notifier).upvote(meal.id),
                 child: Row(
                   children: [
-                    Icon(Icons.favorite_outline, size: 18, color: AppColors.accent),
+                    Icon(
+                      Icons.favorite_outline,
+                      size: 18,
+                      color: AppColors.accent,
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       '${meal.upvotes}',
-                      style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary),
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                   ],
                 ),
@@ -444,7 +513,13 @@ class _FilterSheet extends ConsumerStatefulWidget {
 }
 
 class _FilterSheetState extends ConsumerState<_FilterSheet> {
-  static const _countries = ['kenya', 'uganda', 'rwanda', 'tanzania', 'south sudan'];
+  static const _countries = [
+    'kenya',
+    'uganda',
+    'rwanda',
+    'tanzania',
+    'south sudan',
+  ];
   static const _countryLabels = {
     'kenya': '🇰🇪 Kenya',
     'uganda': '🇺🇬 Uganda',
@@ -483,14 +558,24 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
               children: [
                 Text(
                   'Filter meals',
-                  style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                  style: GoogleFonts.inter(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
                 TextButton(
                   onPressed: () => setState(() {
                     _selectedRegion = null;
                     _selectedSubRegion = null;
                   }),
-                  child: Text('Clear all', style: GoogleFonts.inter(fontSize: 14, color: AppColors.accent)),
+                  child: Text(
+                    'Clear all',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      color: AppColors.accent,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -499,7 +584,12 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
             padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
             child: Text(
               'COUNTRY',
-              style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textSecondary, letterSpacing: 1.2),
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textSecondary,
+                letterSpacing: 1.2,
+              ),
             ),
           ),
           Padding(
@@ -515,12 +605,17 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
                     _selectedSubRegion = null;
                   }),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
                     decoration: BoxDecoration(
                       color: isSelected ? AppColors.accent : Colors.white,
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: isSelected ? AppColors.accent : Colors.black.withValues(alpha: 0.1),
+                        color: isSelected
+                            ? AppColors.accent
+                            : Colors.black.withValues(alpha: 0.1),
                       ),
                     ),
                     child: Text(
@@ -528,7 +623,9 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
                       style: GoogleFonts.inter(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: isSelected ? Colors.white : AppColors.textPrimary,
+                        color: isSelected
+                            ? Colors.white
+                            : AppColors.textPrimary,
                       ),
                     ),
                   ),
@@ -541,7 +638,12 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
               padding: const EdgeInsets.fromLTRB(24, 20, 24, 8),
               child: Text(
                 'COUNTY',
-                style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textSecondary, letterSpacing: 1.2),
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textSecondary,
+                  letterSpacing: 1.2,
+                ),
               ),
             ),
             Expanded(
@@ -553,12 +655,25 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
                   final county = _counties[i];
                   final isSelected = _selectedSubRegion == county;
                   return ListTile(
-                    title: Text(county, style: GoogleFonts.inter(fontSize: 15, color: AppColors.textPrimary)),
+                    title: Text(
+                      county,
+                      style: GoogleFonts.inter(
+                        fontSize: 15,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
                     trailing: isSelected
                         ? Icon(Icons.check_circle, color: AppColors.accent)
-                        : Icon(Icons.circle_outlined, color: Colors.black.withValues(alpha: 0.15)),
-                    onTap: () => setState(() => _selectedSubRegion = isSelected ? null : county),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        : Icon(
+                            Icons.circle_outlined,
+                            color: Colors.black.withValues(alpha: 0.15),
+                          ),
+                    onTap: () => setState(
+                      () => _selectedSubRegion = isSelected ? null : county,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     selected: isSelected,
                     selectedTileColor: AppColors.accent.withValues(alpha: 0.05),
                   );
@@ -574,7 +689,9 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
               height: 56,
               child: ElevatedButton(
                 onPressed: () {
-                  ref.read(mealHistoryFilterProvider.notifier).state = MealHistoryFilter(
+                  ref
+                      .read(mealHistoryFilterProvider.notifier)
+                      .state = MealHistoryFilter(
                     region: _selectedRegion,
                     subRegion: _selectedSubRegion,
                   );
@@ -583,14 +700,330 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.accent,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                   elevation: 0,
                 ),
-                child: Text('Apply filters', style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold)),
+                child: Text(
+                  'Apply filters',
+                  style: GoogleFonts.inter(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _LogMealSheet extends ConsumerStatefulWidget {
+  const _LogMealSheet();
+
+  @override
+  ConsumerState<_LogMealSheet> createState() => _LogMealSheetState();
+}
+
+class _LogMealSheetState extends ConsumerState<_LogMealSheet> {
+  final _formKey = GlobalKey<FormState>();
+  final _mealNameCtrl = TextEditingController();
+  final _costCtrl = TextEditingController();
+  final _userCostCtrl = TextEditingController();
+  final _notesCtrl = TextEditingController();
+  final _recipeTitleCtrl = TextEditingController();
+  final _recipeInstructionsCtrl = TextEditingController();
+
+  String _currency = 'KES';
+  bool _isSubmitting = false;
+  bool _addRecipe = false;
+
+  static const _currencies = ['KES', 'UGX', 'RWF', 'TZS', 'SSP'];
+
+  @override
+  void dispose() {
+    _mealNameCtrl.dispose();
+    _costCtrl.dispose();
+    _userCostCtrl.dispose();
+    _notesCtrl.dispose();
+    _recipeTitleCtrl.dispose();
+    _recipeInstructionsCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+    setState(() => _isSubmitting = true);
+
+    try {
+      final cost = double.parse(_costCtrl.text.trim());
+      final userCostText = _userCostCtrl.text.trim();
+      final userCost = userCostText.isNotEmpty ? double.tryParse(userCostText) : null;
+
+      await ref.read(mealHistoryProvider.notifier).logMeal(
+            mealName: _mealNameCtrl.text.trim(),
+            cost: cost,
+            currency: _currency,
+            userCost: userCost,
+            notes: _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
+            recipeTitle: _addRecipe && _recipeTitleCtrl.text.trim().isNotEmpty
+                ? _recipeTitleCtrl.text.trim()
+                : null,
+            recipeInstructions:
+                _addRecipe && _recipeInstructionsCtrl.text.trim().isNotEmpty
+                    ? _recipeInstructionsCtrl.text.trim()
+                    : null,
+          );
+
+      if (mounted) {
+        Navigator.of(context).pop();
+        AppToast.show(context, 'Meal logged!', type: ToastType.success);
+      }
+    } catch (_) {
+      if (mounted) {
+        AppToast.show(
+          context,
+          'Failed to log meal. Please try again.',
+          type: ToastType.error,
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  InputDecoration _inputDecoration(String hint) => InputDecoration(
+        hintText: hint,
+        hintStyle: GoogleFonts.inter(
+          fontSize: 14,
+          color: AppColors.textSecondary.withValues(alpha: 0.6),
+        ),
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.1)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.1)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.accent),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.toastError),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.toastError),
+        ),
+      );
+
+  Widget _label(String text) => Text(
+        text,
+        style: GoogleFonts.inter(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textSecondary,
+        ),
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Log a meal',
+                    style: GoogleFonts.inter(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.close),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              _label('Meal name *'),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _mealNameCtrl,
+                textCapitalization: TextCapitalization.sentences,
+                decoration: _inputDecoration('e.g. Ugali na Sukuma'),
+                validator: (v) =>
+                    (v == null || v.trim().isEmpty) ? 'Meal name is required' : null,
+              ),
+              const SizedBox(height: 20),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _label('Cost *'),
+                        const SizedBox(height: 8),
+                        TextFormField(
+                          controller: _costCtrl,
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                          decoration: _inputDecoration('0'),
+                          validator: (v) {
+                            if (v == null || v.trim().isEmpty) return 'Required';
+                            final n = double.tryParse(v.trim());
+                            if (n == null || n < 0) return 'Enter a valid amount';
+                            return null;
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  SizedBox(
+                    width: 110,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _label('Currency'),
+                        const SizedBox(height: 8),
+                        DropdownButtonFormField<String>(
+                          value: _currency,
+                          isExpanded: true,
+                          decoration: _inputDecoration(''),
+                          items: _currencies
+                              .map(
+                                (c) => DropdownMenuItem(value: c, child: Text(c)),
+                              )
+                              .toList(),
+                          onChanged: (v) => setState(() => _currency = v ?? 'KES'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              _label('What you actually paid (optional)'),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _userCostCtrl,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: _inputDecoration('Leave blank to use Cost above'),
+              ),
+              const SizedBox(height: 20),
+              _label('Notes (optional)'),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _notesCtrl,
+                maxLines: 3,
+                textCapitalization: TextCapitalization.sentences,
+                decoration: _inputDecoration('Any comments about this meal…'),
+              ),
+              const SizedBox(height: 20),
+              // ── Recipe toggle ──────────────────────────────────────────
+              GestureDetector(
+                onTap: () => setState(() => _addRecipe = !_addRecipe),
+                child: Row(
+                  children: [
+                    Icon(
+                      _addRecipe
+                          ? Icons.remove_circle_outline
+                          : Icons.add_circle_outline,
+                      size: 18,
+                      color: AppColors.accent,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      _addRecipe ? 'Remove recipe' : 'Add a recipe (optional)',
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.accent,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (_addRecipe) ...[
+                const SizedBox(height: 16),
+                _label('Recipe title (optional)'),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _recipeTitleCtrl,
+                  textCapitalization: TextCapitalization.sentences,
+                  decoration: _inputDecoration('e.g. Classic Ugali na Sukuma'),
+                ),
+                const SizedBox(height: 16),
+                _label('Instructions *'),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _recipeInstructionsCtrl,
+                  maxLines: 5,
+                  textCapitalization: TextCapitalization.sentences,
+                  decoration: _inputDecoration('Step-by-step cooking instructions…'),
+                  validator: (v) {
+                    if (!_addRecipe) return null;
+                    if (v == null || v.trim().isEmpty) {
+                      return 'Instructions are required when adding a recipe';
+                    }
+                    return null;
+                  },
+                ),
+              ],
+              const SizedBox(height: 32),
+              ElevatedButton(
+                onPressed: _isSubmitting ? null : _submit,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.accent,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  elevation: 0,
+                  minimumSize: const Size(double.infinity, 56),
+                ),
+                child: _isSubmitting
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Text(
+                        'Log meal',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
