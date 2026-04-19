@@ -61,6 +61,25 @@ class ApiClient {
     return _parseResponse(response);
   }
 
+  Future<Map<String, dynamic>> put(
+    String path, {
+    Map<String, dynamic> body = const {},
+    bool authenticated = true,
+  }) async {
+    final token = authenticated ? await _storage.read(key: _accessTokenKey) : null;
+    final uri = Uri.parse('${AppConfig.apiBaseUrl}$path');
+
+    final response = await http
+        .put(uri, headers: _baseHeaders(token: token), body: jsonEncode(body))
+        .timeout(_timeout);
+
+    if (response.statusCode == 401 && authenticated) {
+      return _refreshAndRetry(() => put(path, body: body));
+    }
+
+    return _parseResponse(response);
+  }
+
   Future<Map<String, dynamic>> postMultipart(
     String path, {
     required Map<String, String> fields,

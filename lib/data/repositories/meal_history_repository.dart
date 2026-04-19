@@ -38,6 +38,10 @@ class MealHistoryRepository {
         .toList();
   }
 
+  Future<void> upvote(String mealId) async {
+    await _client.put('/meal-history/$mealId/upvote');
+  }
+
   Future<void> downvote(String mealId) async {
     await _client.post(
       '/meal-history/$mealId/downvote',

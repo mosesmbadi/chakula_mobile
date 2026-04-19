@@ -101,6 +101,25 @@ class MealHistoryNotifier extends AutoDisposeAsyncNotifier<MealHistoryState> {
     }
   }
 
+  Future<void> upvote(String mealId) async {
+    final current = state.valueOrNull;
+    if (current == null) return;
+
+    // Optimistic increment.
+    state = AsyncData(current.copyWith(
+      meals: current.meals
+          .map((m) => m.id == mealId ? m.copyWith(upvotes: m.upvotes + 1) : m)
+          .toList(),
+    ));
+
+    try {
+      await ref.read(mealHistoryRepositoryProvider).upvote(mealId);
+    } catch (_) {
+      // Restore on failure.
+      state = AsyncData(current);
+    }
+  }
+
   Future<void> downvote(String mealId) async {
     final current = state.valueOrNull;
     if (current == null) return;

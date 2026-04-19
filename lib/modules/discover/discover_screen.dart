@@ -377,6 +377,15 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
           const SizedBox(height: 8),
           Row(
             children: [
+              if (meal.userName != null && meal.userName!.isNotEmpty) ...[
+                Icon(Icons.person_outline, size: 14, color: AppColors.textSecondary),
+                const SizedBox(width: 4),
+                Text(
+                  meal.userName!,
+                  style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary),
+                ),
+                const SizedBox(width: 12),
+              ],
               if (location.isNotEmpty) ...[
                 Icon(Icons.location_on_outlined, size: 14, color: AppColors.textSecondary),
                 const SizedBox(width: 4),
@@ -405,34 +414,16 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
           ],
           const SizedBox(height: 16),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Icon(Icons.thumb_up_outlined, size: 14, color: AppColors.textSecondary),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${meal.upvotes}',
-                    style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary),
-                  ),
-                  const SizedBox(width: 16),
-                  Icon(Icons.thumb_down_outlined, size: 14, color: AppColors.textSecondary),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${meal.downvotes}',
-                    style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary),
-                  ),
-                ],
-              ),
               GestureDetector(
-                onTap: () => ref.read(mealHistoryProvider.notifier).downvote(meal.id),
+                onTap: () => ref.read(mealHistoryProvider.notifier).upvote(meal.id),
                 child: Row(
                   children: [
-                    Icon(Icons.thumb_down, size: 16, color: AppColors.red),
+                    Icon(Icons.favorite_outline, size: 18, color: AppColors.accent),
                     const SizedBox(width: 4),
                     Text(
-                      'Not good',
-                      style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.red),
+                      '${meal.upvotes}',
+                      style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary),
                     ),
                   ],
                 ),
