@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api_client.dart';
 import '../models/meal_history_item.dart';
@@ -46,22 +47,25 @@ class MealHistoryRepository {
     String? notes,
     String? recipeTitle,
     String? recipeInstructions,
+    String? imagePath,
   }) async {
-    await _client.post(
+    final fields = <String, String>{
+      'mealName': mealName,
+      'cost': cost.toString(),
+      'currency': currency,
+      'userCost': (userCost ?? cost).toString(),
+      if (notes != null && notes.isNotEmpty) 'notes': notes,
+      if (recipeInstructions != null && recipeInstructions.isNotEmpty)
+        'recipe': jsonEncode({
+          if (recipeTitle != null && recipeTitle.isNotEmpty)
+            'title': recipeTitle,
+          'instructions': recipeInstructions,
+        }),
+    };
+    await _client.postMultipart(
       '/users/meal-history',
-      body: {
-        'mealName': mealName,
-        'cost': cost,
-        'currency': currency,
-        'userCost': userCost ?? cost,
-        'rating': null,
-        if (notes != null && notes.isNotEmpty) 'notes': notes,
-        if (recipeInstructions != null && recipeInstructions.isNotEmpty)
-          'recipe': {
-            if (recipeTitle != null && recipeTitle.isNotEmpty) 'title': recipeTitle,
-            'instructions': recipeInstructions,
-          },
-      },
+      fields: fields,
+      imagePath: imagePath,
     );
   }
 

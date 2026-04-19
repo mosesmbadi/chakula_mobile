@@ -9,6 +9,9 @@ class MealHistoryItem {
   final String? region;
   final String? subRegion;
   final String? notes;
+  final String? foodId;
+  final String? recipeTitle;
+  final String? recipeInstructions;
   final DateTime eatenAt;
 
   const MealHistoryItem({
@@ -23,6 +26,9 @@ class MealHistoryItem {
     this.region,
     this.subRegion,
     this.notes,
+    this.foodId,
+    this.recipeTitle,
+    this.recipeInstructions,
   });
 
   MealHistoryItem copyWith({int? upvotes}) {
@@ -38,6 +44,9 @@ class MealHistoryItem {
       region: region,
       subRegion: subRegion,
       notes: notes,
+      foodId: foodId,
+      recipeTitle: recipeTitle,
+      recipeInstructions: recipeInstructions,
     );
   }
 
@@ -53,6 +62,9 @@ class MealHistoryItem {
       region: json['region'] as String?,
       subRegion: json['subregion'] as String?,
       notes: json['notes'] as String?,
+      foodId: json['meal_id'] as String?,
+      recipeTitle: json['recipe_title'] as String?,
+      recipeInstructions: json['recipe_instructions'] as String?,
       eatenAt:
           DateTime.tryParse(json['eaten_at'] as String? ?? '') ??
           DateTime.now(),

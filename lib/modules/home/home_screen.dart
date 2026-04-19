@@ -5,10 +5,12 @@ import 'package:image_picker/image_picker.dart';
 import '../../core/app_colors.dart';
 import '../../data/models/meal.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/recipes_provider.dart';
 import '../../providers/recommendations_provider.dart';
 import '../../widgets/app_toast.dart';
 import '../auth/login_screen.dart';
 import '../auth/register_screen.dart';
+import '../recipes/recipes_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -89,7 +91,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         onPressed: () {
                           Navigator.pop(context);
                           Navigator.of(context).push(
-                            MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                            MaterialPageRoute(
+                              builder: (_) => const RegisterScreen(),
+                            ),
                           );
                         },
                         style: ElevatedButton.styleFrom(
@@ -118,12 +122,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         onPressed: () {
                           Navigator.pop(context);
                           Navigator.of(context).push(
-                            MaterialPageRoute(builder: (_) => const LoginScreen()),
+                            MaterialPageRoute(
+                              builder: (_) => const LoginScreen(),
+                            ),
                           );
                         },
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.primary,
-                          side: const BorderSide(color: AppColors.primary, width: 2),
+                          side: const BorderSide(
+                            color: AppColors.primary,
+                            width: 2,
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                           ),
@@ -152,52 +161,59 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (!_requireAuth()) return;
     if (_isAccepting) return;
 
-    final userCost = await _promptForUserCost(meal);
-    if (!mounted) return;
+    final costResult = await _promptForUserCost(meal);
+    if (costResult.cancelled || !mounted) return;
 
-    final imagePath = await _promptForPhoto();
-    if (!mounted) return;
+    final photoResult = await _promptForPhoto();
+    if (photoResult.cancelled || !mounted) return;
 
-    final recipe = await _promptForRecipe(meal);
-    if (!mounted) return;
+    final recipeResult = await _promptForRecipe(meal);
+    if (recipeResult.cancelled || !mounted) return;
 
     setState(() => _isAccepting = true);
     final error = await ref
         .read(recommendationsProvider.notifier)
         .acceptMeal(
           _mealType,
-          [meal],
-          userCost: userCost,
-          imagePath: imagePath,
-          recipeTitle: recipe?['title'],
-          recipeInstructions: recipe?['instructions'],
+          meal,
+          userCost: costResult.value,
+          imagePath: photoResult.value,
+          recipeTitle: recipeResult.value?['title'],
+          recipeInstructions: recipeResult.value?['instructions'],
         );
     if (!mounted) return;
     setState(() => _isAccepting = false);
 
     AppToast.show(
       context,
-      error == null ? '${_mealType[0].toUpperCase()}${_mealType.substring(1)} accepted!' : 'Could not accept meal. Please try again.',
+      error == null
+          ? '${_mealType[0].toUpperCase()}${_mealType.substring(1)} accepted!'
+          : 'Could not accept meal. Please try again.',
       type: error == null ? ToastType.success : ToastType.error,
     );
   }
 
-  Future<int?> _promptForUserCost(Meal meal) {
-    return showModalBottomSheet<int>(
+  Future<({bool cancelled, int? value})> _promptForUserCost(Meal meal) async {
+    final result = await showModalBottomSheet<({bool cancelled, int? value})>(
       context: context,
       isScrollControlled: true,
+      isDismissible: false,
+      enableDrag: false,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (_) => _UserCostSheet(meal: meal),
     );
+    return result ?? (cancelled: true, value: null);
   }
 
-  Future<String?> _promptForPhoto() async {
-    String? imagePath;
-    await showModalBottomSheet<void>(
+  Future<({bool cancelled, String? value})> _promptForPhoto() async {
+    final result =
+        await showModalBottomSheet<({bool cancelled, String? value})>(
       context: context,
+      isDismissible: false,
+      enableDrag: false,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -208,14 +224,33 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Add a photo?',
-              style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Add a photo?',
+                  style: GoogleFonts.inter(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => Navigator.pop(
+                    sheetCtx,
+                    (cancelled: true, value: null as String?),
+                  ),
+                  icon: const Icon(Icons.close),
+                ),
+              ],
             ),
             const SizedBox(height: 8),
             Text(
               'Optionally attach a photo of your meal.',
-              style: GoogleFonts.inter(fontSize: 14, color: AppColors.textSecondary),
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                color: AppColors.textSecondary,
+              ),
             ),
             const SizedBox(height: 24),
             Row(
@@ -223,17 +258,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 Expanded(
                   child: OutlinedButton.icon(
                     icon: const Icon(Icons.camera_alt_outlined),
-                    label: Text('Camera', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                    label: Text(
+                      'Camera',
+                      style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                    ),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppColors.accent,
                       side: const BorderSide(color: AppColors.accent),
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
                     ),
                     onPressed: () async {
-                      final picked = await ImagePicker().pickImage(source: ImageSource.camera, imageQuality: 85);
-                      imagePath = picked?.path;
-                      if (sheetCtx.mounted) Navigator.pop(sheetCtx);
+                      final picked = await ImagePicker().pickImage(
+                        source: ImageSource.camera,
+                        imageQuality: 85,
+                      );
+                      if (sheetCtx.mounted) {
+                        Navigator.pop(
+                          sheetCtx,
+                          (cancelled: false, value: picked?.path),
+                        );
+                      }
                     },
                   ),
                 ),
@@ -241,17 +288,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 Expanded(
                   child: OutlinedButton.icon(
                     icon: const Icon(Icons.photo_library_outlined),
-                    label: Text('Gallery', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                    label: Text(
+                      'Gallery',
+                      style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                    ),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppColors.accent,
                       side: const BorderSide(color: AppColors.accent),
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
                     ),
                     onPressed: () async {
-                      final picked = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 85);
-                      imagePath = picked?.path;
-                      if (sheetCtx.mounted) Navigator.pop(sheetCtx);
+                      final picked = await ImagePicker().pickImage(
+                        source: ImageSource.gallery,
+                        imageQuality: 85,
+                      );
+                      if (sheetCtx.mounted) {
+                        Navigator.pop(
+                          sheetCtx,
+                          (cancelled: false, value: picked?.path),
+                        );
+                      }
                     },
                   ),
                 ),
@@ -261,27 +320,42 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             SizedBox(
               width: double.infinity,
               child: TextButton(
-                onPressed: () => Navigator.pop(sheetCtx),
-                child: Text('Skip', style: GoogleFonts.inter(fontSize: 15, color: AppColors.textSecondary)),
+                onPressed: () => Navigator.pop(
+                  sheetCtx,
+                  (cancelled: false, value: null as String?),
+                ),
+                child: Text(
+                  'Skip',
+                  style: GoogleFonts.inter(
+                    fontSize: 15,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
               ),
             ),
           ],
         ),
       ),
     );
-    return imagePath;
+    return result ?? (cancelled: true, value: null);
   }
 
-  Future<Map<String, String>?> _promptForRecipe(Meal meal) {
-    return showModalBottomSheet<Map<String, String>>(
+  Future<({bool cancelled, Map<String, String>? value})> _promptForRecipe(
+    Meal meal,
+  ) async {
+    final result = await showModalBottomSheet<
+        ({bool cancelled, Map<String, String>? value})>(
       context: context,
       isScrollControlled: true,
+      isDismissible: false,
+      enableDrag: false,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (_) => _RecipeSheet(mealName: meal.name),
     );
+    return result ?? (cancelled: true, value: null);
   }
 
   @override
@@ -329,8 +403,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }) {
     final currentFoods = allFoods?[_mealType] ?? [];
     final budget = allFoods != null
-        ? (allFoods.values.expand((f) => f).fold<int>(0, (sum, f) => sum + f.priceMinKes) ~/
-            (allFoods.values.expand((f) => f).length.clamp(1, 999)))
+        ? (allFoods.values
+                  .expand((f) => f)
+                  .fold<int>(0, (sum, f) => sum + f.priceMinKes) ~/
+              (allFoods.values.expand((f) => f).length.clamp(1, 999)))
         : 0;
 
     return Column(
@@ -343,7 +419,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             if (auth is AuthAuthenticated) return 'Hello ${auth.user.name} 👋';
             return 'Hello Traveler 👋';
           }(),
-          style: GoogleFonts.inter(fontSize: 16, color: AppColors.textSecondary),
+          style: GoogleFonts.inter(
+            fontSize: 16,
+            color: AppColors.textSecondary,
+          ),
         ),
         const SizedBox(height: 4),
         Row(
@@ -359,7 +438,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
             if (allFoods != null)
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.primary.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(20),
@@ -391,7 +473,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   }),
                   child: Container(
                     margin: const EdgeInsets.only(right: 8),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       color: isSelected ? AppColors.accent : Colors.transparent,
                       borderRadius: BorderRadius.circular(20),
@@ -406,7 +491,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       style: GoogleFonts.inter(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: isSelected ? Colors.white : AppColors.textSecondary,
+                        color: isSelected
+                            ? Colors.white
+                            : AppColors.textSecondary,
                       ),
                     ),
                   ),
@@ -420,13 +507,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         isLoading
             ? _buildFeaturedCardSkeleton()
             : error != null
-                ? _buildErrorCard(error)
-                : currentFoods.isEmpty
-                    ? _buildErrorCard('No recommendations found')
-                    : _buildFeaturedCard(
-                        currentFoods,
-                        allFoods ?? {},
-                      ),
+            ? _buildErrorCard(error)
+            : currentFoods.isEmpty
+            ? _buildErrorCard('No recommendations found')
+            : _buildFeaturedCard(currentFoods, allFoods ?? {}),
         const SizedBox(height: 32),
         Text(
           'MORE OPTIONS',
@@ -442,27 +526,156 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           child: isLoading
               ? _buildSmallCardSkeletons()
               : currentFoods.length < 2
-                  ? const SizedBox.shrink()
-                  : ListView(
-                      scrollDirection: Axis.horizontal,
-                      children: [
-                        for (int i = 1; i < currentFoods.length; i++) ...[
-                          _buildSmallMealCard(
-                            currentFoods[i].name,
-                            'KSh ${currentFoods[i].priceMinKes}',
-                            i == 1 ? AppColors.accent : AppColors.protein,
-                          ),
-                          if (i < currentFoods.length - 1) const SizedBox(width: 12),
-                        ],
-                      ],
-                    ),
+              ? const SizedBox.shrink()
+              : ListView(
+                  scrollDirection: Axis.horizontal,
+                  children: [
+                    for (int i = 1; i < currentFoods.length; i++) ...[
+                      _buildSmallMealCard(
+                        currentFoods[i].name,
+                        'KSh ${currentFoods[i].priceMinKes}',
+                        i == 1 ? AppColors.accent : AppColors.protein,
+                      ),
+                      if (i < currentFoods.length - 1)
+                        const SizedBox(width: 12),
+                    ],
+                  ],
+                ),
         ),
+        const SizedBox(height: 32),
+        _buildExploreRecipes(),
         const SizedBox(height: 32),
       ],
     );
   }
 
-  Widget _buildFeaturedCard(List<Meal> foods, Map<String, List<Meal>> allFoods) {
+  Widget _buildExploreRecipes() {
+    final isAuthenticated = ref.watch(authProvider) is AuthAuthenticated;
+    if (!isAuthenticated) return const SizedBox.shrink();
+
+    final recipesAsync = ref.watch(homeRecipesProvider);
+
+    Widget body;
+    switch (recipesAsync) {
+      case AsyncLoading():
+        body = const Padding(
+          padding: EdgeInsets.symmetric(vertical: 16),
+          child: Center(child: CircularProgressIndicator()),
+        );
+      case AsyncError():
+        body = Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: Text(
+            'Could not load recipes',
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        );
+      case AsyncData(:final value) when value.isEmpty:
+        body = Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: Text(
+            'No recipes yet. Be the first to add one!',
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        );
+      case AsyncData(:final value):
+        body = Column(
+          children: value
+              .map(
+                (recipe) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: GestureDetector(
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const RecipesScreen()),
+                    ),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: Colors.black.withValues(alpha: 0.05),
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            recipe.title,
+                            style: GoogleFonts.inter(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            recipe.instructions,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.inter(
+                              fontSize: 13,
+                              color: AppColors.textSecondary,
+                              height: 1.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              )
+              .toList(),
+        );
+      default:
+        body = const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'EXPLORE RECIPES',
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            GestureDetector(
+              onTap: () => Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (_) => const RecipesScreen())),
+              child: Text(
+                'More',
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.accent,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        body,
+      ],
+    );
+  }
+
+  Widget _buildFeaturedCard(
+    List<Meal> foods,
+    Map<String, List<Meal>> allFoods,
+  ) {
     final food = foods[_swapIndex % foods.length];
     final location = food.commonAt.isNotEmpty ? food.commonAt.first : 'kenya';
     final canSwap = foods.length > 1;
@@ -489,7 +702,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
@@ -528,11 +744,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               Expanded(
                 flex: 2,
                 child: GestureDetector(
-                  onTap: _isAccepting
-                      ? null
-                      : () => _acceptCurrentMeal(food),
+                  onTap: _isAccepting ? null : () => _acceptCurrentMeal(food),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12),
@@ -543,7 +760,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               width: 18,
                               height: 18,
                               child: CircularProgressIndicator(
-                                  color: Colors.white, strokeWidth: 2),
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
                             )
                           : Text(
                               'Accept this meal',
@@ -562,14 +781,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 GestureDetector(
                   onTap: () => setState(() => _swapIndex++),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.swap_horiz, color: Colors.white, size: 18),
+                        const Icon(
+                          Icons.swap_horiz,
+                          color: Colors.white,
+                          size: 18,
+                        ),
                         const SizedBox(width: 6),
                         Text(
                           'Swap',
@@ -619,7 +845,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         color: AppColors.accent.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(24),
       ),
-      child: const Center(child: CircularProgressIndicator(color: Colors.white)),
+      child: const Center(
+        child: CircularProgressIndicator(color: Colors.white),
+      ),
     );
   }
 
@@ -687,7 +915,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           const SizedBox(height: 4),
           Text(
             price,
-            style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary),
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              color: AppColors.textSecondary,
+            ),
           ),
         ],
       ),
@@ -709,7 +940,9 @@ class _UserCostSheetState extends State<_UserCostSheet> {
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(text: widget.meal.priceMinKes.toString());
+    _controller = TextEditingController(
+      text: widget.meal.priceMinKes.toString(),
+    );
   }
 
   @override
@@ -721,31 +954,68 @@ class _UserCostSheetState extends State<_UserCostSheet> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(24, 20, 24, MediaQuery.of(context).viewInsets.bottom + 36),
+      padding: EdgeInsets.fromLTRB(
+        24,
+        20,
+        24,
+        MediaQuery.of(context).viewInsets.bottom + 36,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'How much did you pay?',
-            style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  'How much did you pay?',
+                  style: GoogleFonts.inter(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ),
+              IconButton(
+                onPressed: () => Navigator.pop(
+                  context,
+                  (cancelled: true, value: null as int?),
+                ),
+                icon: const Icon(Icons.close),
+              ),
+            ],
           ),
           const SizedBox(height: 4),
           Text(
             'Listed price is KSh ${widget.meal.priceMinKes}. Enter what you actually paid.',
-            style: GoogleFonts.inter(fontSize: 14, color: AppColors.textSecondary),
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              color: AppColors.textSecondary,
+            ),
           ),
           const SizedBox(height: 20),
           TextField(
             controller: _controller,
             keyboardType: TextInputType.number,
             autofocus: true,
-            style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+            style: GoogleFonts.inter(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
             decoration: InputDecoration(
               prefixText: 'KSh ',
-              prefixStyle: GoogleFonts.inter(fontSize: 18, color: AppColors.textSecondary),
-              enabledBorder: const UnderlineInputBorder(borderSide: BorderSide(color: AppColors.primary, width: 2)),
-              focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: AppColors.accent, width: 2)),
+              prefixStyle: GoogleFonts.inter(
+                fontSize: 18,
+                color: AppColors.textSecondary,
+              ),
+              enabledBorder: const UnderlineInputBorder(
+                borderSide: BorderSide(color: AppColors.primary, width: 2),
+              ),
+              focusedBorder: const UnderlineInputBorder(
+                borderSide: BorderSide(color: AppColors.accent, width: 2),
+              ),
             ),
           ),
           const SizedBox(height: 24),
@@ -753,29 +1023,47 @@ class _UserCostSheetState extends State<_UserCostSheet> {
             children: [
               Expanded(
                 child: OutlinedButton(
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () => Navigator.pop(
+                    context,
+                    (cancelled: false, value: null as int?),
+                  ),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.textSecondary,
-                    side: BorderSide(color: Colors.black.withValues(alpha: 0.15)),
+                    side: BorderSide(
+                      color: Colors.black.withValues(alpha: 0.15),
+                    ),
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                   ),
-                  child: Text('Skip', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                  child: Text(
+                    'Skip',
+                    style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 flex: 2,
                 child: ElevatedButton(
-                  onPressed: () => Navigator.pop(context, int.tryParse(_controller.text.trim())),
+                  onPressed: () => Navigator.pop(
+                    context,
+                    (cancelled: false, value: int.tryParse(_controller.text.trim())),
+                  ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.accent,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                     elevation: 0,
                   ),
-                  child: Text('Confirm', style: GoogleFonts.inter(fontWeight: FontWeight.bold)),
+                  child: Text(
+                    'Confirm',
+                    style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
             ],
@@ -810,47 +1098,50 @@ class _RecipeSheetState extends State<_RecipeSheet> {
 
   void _submit() {
     if (!(_formKey.currentState?.validate() ?? false)) return;
-    Navigator.pop(context, {
+    final Map<String, String> recipe = {
       if (_titleCtrl.text.trim().isNotEmpty) 'title': _titleCtrl.text.trim(),
       'instructions': _instructionsCtrl.text.trim(),
-    });
+    };
+    Navigator.pop(context, (cancelled: false, value: recipe as Map<String, String>?));
   }
 
   InputDecoration _dec(String hint) => InputDecoration(
-        hintText: hint,
-        hintStyle: GoogleFonts.inter(
-          fontSize: 14,
-          color: AppColors.textSecondary.withValues(alpha: 0.6),
-        ),
-        filled: true,
-        fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.1)),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.1)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.accent),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.toastError),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.toastError),
-        ),
-      );
+    hintText: hint,
+    hintStyle: GoogleFonts.inter(
+      fontSize: 14,
+      color: AppColors.textSecondary.withValues(alpha: 0.6),
+    ),
+    filled: true,
+    fillColor: Colors.white,
+    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.1)),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.1)),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: AppColors.accent),
+    ),
+    errorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: AppColors.toastError),
+    ),
+    focusedErrorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: AppColors.toastError),
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
       child: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -873,7 +1164,10 @@ class _RecipeSheetState extends State<_RecipeSheet> {
                     ),
                   ),
                   IconButton(
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () => Navigator.pop(
+                      context,
+                      (cancelled: true, value: null as Map<String, String>?),
+                    ),
                     icon: const Icon(Icons.close),
                   ),
                 ],
@@ -881,7 +1175,10 @@ class _RecipeSheetState extends State<_RecipeSheet> {
               const SizedBox(height: 4),
               Text(
                 'Share how to make ${widget.mealName}. This is optional.',
-                style: GoogleFonts.inter(fontSize: 14, color: AppColors.textSecondary),
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  color: AppColors.textSecondary,
+                ),
               ),
               const SizedBox(height: 20),
               Text(
@@ -922,16 +1219,24 @@ class _RecipeSheetState extends State<_RecipeSheet> {
                 children: [
                   Expanded(
                     child: OutlinedButton(
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () => Navigator.pop(
+                        context,
+                        (cancelled: false, value: null as Map<String, String>?),
+                      ),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.textSecondary,
-                        side: BorderSide(color: Colors.black.withValues(alpha: 0.15)),
+                        side: BorderSide(
+                          color: Colors.black.withValues(alpha: 0.15),
+                        ),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
                         ),
                       ),
-                      child: Text('Skip', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                      child: Text(
+                        'Skip',
+                        style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),

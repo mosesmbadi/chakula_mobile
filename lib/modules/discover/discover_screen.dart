@@ -475,6 +475,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
           ],
           const SizedBox(height: 16),
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               GestureDetector(
                 onTap: () =>
@@ -492,6 +493,41 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
                       style: GoogleFonts.inter(
                         fontSize: 13,
                         color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              GestureDetector(
+                onTap: () => showModalBottomSheet<void>(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.white,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(24),
+                    ),
+                  ),
+                  builder: (_) => _RecipeSheet(
+                    mealName: meal.mealName,
+                    recipeTitle: meal.recipeTitle,
+                    recipeInstructions: meal.recipeInstructions,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.menu_book_outlined,
+                      size: 16,
+                      color: AppColors.accent,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'View Recipe',
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.accent,
                       ),
                     ),
                   ],
@@ -721,6 +757,102 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
   }
 }
 
+class _RecipeSheet extends StatelessWidget {
+  final String mealName;
+  final String? recipeTitle;
+  final String? recipeInstructions;
+
+  const _RecipeSheet({
+    required this.mealName,
+    this.recipeTitle,
+    this.recipeInstructions,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.5,
+      minChildSize: 0.3,
+      maxChildSize: 0.9,
+      expand: false,
+      builder: (_, ctrl) => SingleChildScrollView(
+        controller: ctrl,
+        padding: const EdgeInsets.fromLTRB(24, 20, 24, 36),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Recipe for $mealName',
+              style: GoogleFonts.inter(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 16),
+            if (recipeInstructions != null) ...[
+              if (recipeTitle != null) ...[
+                Text(
+                  recipeTitle!,
+                  style: GoogleFonts.inter(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                  ),
+                ),
+                child: Text(
+                  recipeInstructions!,
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    color: AppColors.textSecondary,
+                    height: 1.6,
+                  ),
+                ),
+              ),
+            ] else
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 32),
+                  child: Text(
+                    'No recipe shared for this meal',
+                    style: GoogleFonts.inter(
+                      fontSize: 15,
+                      color: AppColors.textSecondary,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _LogMealSheet extends ConsumerStatefulWidget {
   const _LogMealSheet();
 
@@ -761,21 +893,27 @@ class _LogMealSheetState extends ConsumerState<_LogMealSheet> {
     try {
       final cost = double.parse(_costCtrl.text.trim());
       final userCostText = _userCostCtrl.text.trim();
-      final userCost = userCostText.isNotEmpty ? double.tryParse(userCostText) : null;
+      final userCost = userCostText.isNotEmpty
+          ? double.tryParse(userCostText)
+          : null;
 
-      await ref.read(mealHistoryProvider.notifier).logMeal(
+      await ref
+          .read(mealHistoryProvider.notifier)
+          .logMeal(
             mealName: _mealNameCtrl.text.trim(),
             cost: cost,
             currency: _currency,
             userCost: userCost,
-            notes: _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
+            notes: _notesCtrl.text.trim().isEmpty
+                ? null
+                : _notesCtrl.text.trim(),
             recipeTitle: _addRecipe && _recipeTitleCtrl.text.trim().isNotEmpty
                 ? _recipeTitleCtrl.text.trim()
                 : null,
             recipeInstructions:
                 _addRecipe && _recipeInstructionsCtrl.text.trim().isNotEmpty
-                    ? _recipeInstructionsCtrl.text.trim()
-                    : null,
+                ? _recipeInstructionsCtrl.text.trim()
+                : null,
           );
 
       if (mounted) {
@@ -796,49 +934,51 @@ class _LogMealSheetState extends ConsumerState<_LogMealSheet> {
   }
 
   InputDecoration _inputDecoration(String hint) => InputDecoration(
-        hintText: hint,
-        hintStyle: GoogleFonts.inter(
-          fontSize: 14,
-          color: AppColors.textSecondary.withValues(alpha: 0.6),
-        ),
-        filled: true,
-        fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.1)),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.1)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.accent),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.toastError),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.toastError),
-        ),
-      );
+    hintText: hint,
+    hintStyle: GoogleFonts.inter(
+      fontSize: 14,
+      color: AppColors.textSecondary.withValues(alpha: 0.6),
+    ),
+    filled: true,
+    fillColor: Colors.white,
+    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.1)),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.1)),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: AppColors.accent),
+    ),
+    errorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: AppColors.toastError),
+    ),
+    focusedErrorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: AppColors.toastError),
+    ),
+  );
 
   Widget _label(String text) => Text(
-        text,
-        style: GoogleFonts.inter(
-          fontSize: 13,
-          fontWeight: FontWeight.w600,
-          color: AppColors.textSecondary,
-        ),
-      );
+    text,
+    style: GoogleFonts.inter(
+      fontSize: 13,
+      fontWeight: FontWeight.w600,
+      color: AppColors.textSecondary,
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
       child: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -871,8 +1011,9 @@ class _LogMealSheetState extends ConsumerState<_LogMealSheet> {
                 controller: _mealNameCtrl,
                 textCapitalization: TextCapitalization.sentences,
                 decoration: _inputDecoration('e.g. Ugali na Sukuma'),
-                validator: (v) =>
-                    (v == null || v.trim().isEmpty) ? 'Meal name is required' : null,
+                validator: (v) => (v == null || v.trim().isEmpty)
+                    ? 'Meal name is required'
+                    : null,
               ),
               const SizedBox(height: 20),
               Row(
@@ -891,9 +1032,11 @@ class _LogMealSheetState extends ConsumerState<_LogMealSheet> {
                           ),
                           decoration: _inputDecoration('0'),
                           validator: (v) {
-                            if (v == null || v.trim().isEmpty) return 'Required';
+                            if (v == null || v.trim().isEmpty)
+                              return 'Required';
                             final n = double.tryParse(v.trim());
-                            if (n == null || n < 0) return 'Enter a valid amount';
+                            if (n == null || n < 0)
+                              return 'Enter a valid amount';
                             return null;
                           },
                         ),
@@ -909,15 +1052,17 @@ class _LogMealSheetState extends ConsumerState<_LogMealSheet> {
                         _label('Currency'),
                         const SizedBox(height: 8),
                         DropdownButtonFormField<String>(
-                          value: _currency,
+                          initialValue: _currency,
                           isExpanded: true,
                           decoration: _inputDecoration(''),
                           items: _currencies
                               .map(
-                                (c) => DropdownMenuItem(value: c, child: Text(c)),
+                                (c) =>
+                                    DropdownMenuItem(value: c, child: Text(c)),
                               )
                               .toList(),
-                          onChanged: (v) => setState(() => _currency = v ?? 'KES'),
+                          onChanged: (v) =>
+                              setState(() => _currency = v ?? 'KES'),
                         ),
                       ],
                     ),
@@ -929,7 +1074,9 @@ class _LogMealSheetState extends ConsumerState<_LogMealSheet> {
               const SizedBox(height: 8),
               TextFormField(
                 controller: _userCostCtrl,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 decoration: _inputDecoration('Leave blank to use Cost above'),
               ),
               const SizedBox(height: 20),
@@ -982,7 +1129,9 @@ class _LogMealSheetState extends ConsumerState<_LogMealSheet> {
                   controller: _recipeInstructionsCtrl,
                   maxLines: 5,
                   textCapitalization: TextCapitalization.sentences,
-                  decoration: _inputDecoration('Step-by-step cooking instructions…'),
+                  decoration: _inputDecoration(
+                    'Step-by-step cooking instructions…',
+                  ),
                   validator: (v) {
                     if (!_addRecipe) return null;
                     if (v == null || v.trim().isEmpty) {

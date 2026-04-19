@@ -155,16 +155,20 @@ class MealHistoryNotifier extends AutoDisposeAsyncNotifier<MealHistoryState> {
     String? notes,
     String? recipeTitle,
     String? recipeInstructions,
+    String? imagePath,
   }) async {
-    await ref.read(mealHistoryRepositoryProvider).logMeal(
-      mealName: mealName,
-      cost: cost,
-      currency: currency,
-      userCost: userCost,
-      notes: notes,
-      recipeTitle: recipeTitle,
-      recipeInstructions: recipeInstructions,
-    );
+    await ref
+        .read(mealHistoryRepositoryProvider)
+        .logMeal(
+          mealName: mealName,
+          cost: cost,
+          currency: currency,
+          userCost: userCost,
+          notes: notes,
+          recipeTitle: recipeTitle,
+          recipeInstructions: recipeInstructions,
+          imagePath: imagePath,
+        );
     // Refresh the feed so the new entry appears.
     ref.invalidateSelf();
   }

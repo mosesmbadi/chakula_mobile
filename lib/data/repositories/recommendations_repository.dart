@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api_client.dart';
 import '../models/meal.dart';
 
-final recommendationsRepositoryProvider = Provider<RecommendationsRepository>((ref) {
+final recommendationsRepositoryProvider = Provider<RecommendationsRepository>((
+  ref,
+) {
   return RecommendationsRepository(ref.read(apiClientProvider));
 });
 
@@ -20,12 +22,14 @@ class RecommendationsRepository {
     bool authenticated = false,
   }) async {
     final results = await Future.wait(
-      _mealTypes.map((type) => _fetchMealType(
-            type,
-            budget: budget,
-            region: region,
-            authenticated: authenticated,
-          )),
+      _mealTypes.map(
+        (type) => _fetchMealType(
+          type,
+          budget: budget,
+          region: region,
+          authenticated: authenticated,
+        ),
+      ),
     );
 
     return {
@@ -63,7 +67,9 @@ class RecommendationsRepository {
 
       final recs = data['recommendations'] as Map<String, dynamic>?;
       final foods = recs?['foods'] as List?;
-      return foods?.map((f) => Meal.fromJson(f as Map<String, dynamic>)).toList();
+      return foods
+          ?.map((f) => Meal.fromJson(f as Map<String, dynamic>))
+          .toList();
     } catch (_) {
       return null;
     }
@@ -71,28 +77,32 @@ class RecommendationsRepository {
 
   Future<void> acceptMeal({
     required String mealType,
-    required List<Meal> foods,
+    required Meal food,
     int? userCost,
     String? imagePath,
     String? recipeTitle,
     String? recipeInstructions,
   }) async {
-    await _client.postMultipart(
-      '/recommendations/accept',
-      fields: {
-        'mealType': mealType,
-        'foods': jsonEncode(
-          foods
-              .map((f) => f.toAcceptPayload(
-                    userCost: userCost,
-                    recipeTitle: recipeTitle,
-                    recipeInstructions: recipeInstructions,
-                  ))
-              .toList(),
-        ),
-      },
-      imagePath: imagePath,
+    final foodPayload = food.toAcceptPayload(
+      userCost: userCost,
+      recipeTitle: recipeTitle,
+      recipeInstructions: recipeInstructions,
     );
+
+    if (imagePath != null) {
+      // Multipart when a photo is attached; food is JSON-encoded as a form field.
+      await _client.postMultipart(
+        '/recommendations/accept',
+        fields: {'mealType': mealType, 'food': jsonEncode(foodPayload)},
+        imagePath: imagePath,
+      );
+    } else {
+      // Pure JSON body.
+      await _client.post(
+        '/recommendations/accept',
+        body: {'mealType': mealType, 'food': foodPayload},
+      );
+    }
   }
 
   Future<void> acceptDayPlan(Map<String, List<Meal>> plan) async {
@@ -101,7 +111,7 @@ class RecommendationsRepository {
       body: {
         'plan': {
           for (final entry in plan.entries)
-            entry.key: entry.value.take(1).map((f) => f.toAcceptPayload()).toList(),
+            entry.key: entry.value.first.toAcceptPayload(),
         },
       },
     );

@@ -6,8 +6,8 @@ import '../providers/onboarding_provider.dart';
 
 final recommendationsProvider =
     AsyncNotifierProvider<RecommendationsNotifier, Map<String, List<Meal>>>(
-  RecommendationsNotifier.new,
-);
+      RecommendationsNotifier.new,
+    );
 
 class RecommendationsNotifier extends AsyncNotifier<Map<String, List<Meal>>> {
   @override
@@ -33,16 +33,18 @@ class RecommendationsNotifier extends AsyncNotifier<Map<String, List<Meal>>> {
 
   Future<String?> acceptMeal(
     String mealType,
-    List<Meal> foods, {
+    Meal food, {
     int? userCost,
     String? imagePath,
     String? recipeTitle,
     String? recipeInstructions,
   }) async {
     try {
-      await ref.read(recommendationsRepositoryProvider).acceptMeal(
+      await ref
+          .read(recommendationsRepositoryProvider)
+          .acceptMeal(
             mealType: mealType,
-            foods: foods,
+            food: food,
             userCost: userCost,
             imagePath: imagePath,
             recipeTitle: recipeTitle,
@@ -68,7 +70,11 @@ class RecommendationsNotifier extends AsyncNotifier<Map<String, List<Meal>>> {
     state = await AsyncValue.guard(() async {
       final repo = ref.read(recommendationsRepositoryProvider);
       final isAuthenticated = ref.read(authProvider) is AuthAuthenticated;
-      return repo.fetchAll(budget: _resolveBudget(), region: _resolveRegion(), authenticated: isAuthenticated);
+      return repo.fetchAll(
+        budget: _resolveBudget(),
+        region: _resolveRegion(),
+        authenticated: isAuthenticated,
+      );
     });
   }
 }
