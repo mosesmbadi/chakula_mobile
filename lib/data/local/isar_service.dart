@@ -3,13 +3,18 @@ import 'package:path_provider/path_provider.dart';
 import '../models/onboarding_data.dart';
 
 class IsarService {
-  late Future<Isar> _db;
+  static Future<Isar>? _sharedDb;
 
   IsarService() {
-    _db = _openDb();
+    _sharedDb ??= _openDb();
   }
 
-  Future<Isar> _openDb() async {
+  static Future<void> initialize() async {
+    _sharedDb ??= _openDb();
+    await _sharedDb;
+  }
+
+  static Future<Isar> _openDb() async {
     final dir = await getApplicationDocumentsDirectory();
     return Isar.open(
       [OnboardingDataSchema],
@@ -17,9 +22,11 @@ class IsarService {
     );
   }
 
+  Future<Isar> get _db => _sharedDb!;
+
   Future<void> saveOnboardingData(OnboardingData data) async {
     final isar = await _db;
-    data.id = 1; // Fixed ID so every save upserts the same record
+    data.id = 1;
     await isar.writeTxn(() async {
       await isar.onboardingDatas.put(data);
     });

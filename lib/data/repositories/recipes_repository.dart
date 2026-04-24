@@ -17,20 +17,25 @@ class RecipesRepository {
     int page = 1,
     int limit = 20,
   }) async {
-    final data = await _client.get(
-      '/recipes',
-      queryParams: {
-        'page': '$page',
-        'limit': '$limit',
-        if (userId != null) 'user_id': userId,
-        if (foodId != null) 'food_id': foodId,
-      },
-    );
-    final rawList = data['data'] as List?;
-    if (rawList == null) return [];
-    return rawList
-        .map((e) => Recipe.fromJson(e as Map<String, dynamic>))
-        .toList();
+    try {
+      final data = await _client.get(
+        '/recipes',
+        queryParams: {
+          'page': '$page',
+          'limit': '$limit',
+          if (userId != null) 'user_id': userId,
+          if (foodId != null) 'food_id': foodId,
+        },
+      );
+      final rawList = data['data'] as List?;
+      if (rawList == null) return [];
+      return rawList
+          .map((e) => Recipe.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } on ApiException catch (e) {
+      if (e.statusCode == 404) return [];
+      rethrow;
+    }
   }
 
   Future<Recipe?> fetchRecipe(String id) async {

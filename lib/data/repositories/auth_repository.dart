@@ -82,14 +82,18 @@ class AuthRepository {
   }
 
   Future<User?> getStoredUser() async {
-    final access = await _client.getAccessToken();
-    final userDataJson = await _storage.read(key: _userDataKey);
+    try {
+      final access = await _client.getAccessToken();
+      final userDataJson = await _storage.read(key: _userDataKey);
 
-    if (access != null && userDataJson != null) {
-      final data = jsonDecode(userDataJson) as Map<String, dynamic>;
-      return User.fromJson(data);
+      if (access != null && userDataJson != null) {
+        final data = jsonDecode(userDataJson) as Map<String, dynamic>;
+        return User.fromJson(data);
+      }
+      return null;
+    } catch (_) {
+      return null;
     }
-    return null;
   }
 
   Future<void> clearSession() async {

@@ -22,11 +22,18 @@ class AuthRegisterScreen extends AppScreen {
 }
 
 final appScreenProvider = FutureProvider<AppScreen>((ref) async {
-  // Check auth status
-  final authState = ref.watch(authProvider);
+  // By the time this provider is first watched, auth is already resolved
+  // (HomeWrapper only watches this after the AuthInitializing guard passes).
+  // Use ref.read so auth changes after login don't re-trigger this — HomeWrapper
+  // handles the AuthAuthenticated case directly.
+  final authState = ref.read(authProvider);
 
-  // Check onboarding completion
-  final isarService = ref.watch(isarServiceProvider);
+  if (authState is AuthAuthenticated) {
+    return const AuthenticatedScreen();
+  }
+
+  // User is not authenticated — check onboarding completion.
+  final isarService = ref.read(isarServiceProvider);
   final onboardingData = await isarService.getOnboardingData();
   final hasCompletedOnboarding =
       onboardingData != null &&
@@ -34,18 +41,9 @@ final appScreenProvider = FutureProvider<AppScreen>((ref) async {
       onboardingData.county.isNotEmpty &&
       onboardingData.dailyBudget > 0;
 
-  // Decision tree
-  if (authState is AuthAuthenticated) {
-    // User is logged in
-    return const AuthenticatedScreen();
-  }
-
-  // User is not authenticated
   if (hasCompletedOnboarding) {
-    // Has onboarding data, ready to register
     return const AuthRegisterScreen();
   }
 
-  // Needs to go through onboarding first
   return const OnboardingScreen();
 });

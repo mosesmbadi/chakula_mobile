@@ -32,7 +32,9 @@ class ApiClient {
       '${AppConfig.apiBaseUrl}$path',
     ).replace(queryParameters: queryParams);
 
-    debugPrint('[ApiClient] GET: $uri');
+    if (kDebugMode) {
+      debugPrint('[ApiClient] GET: $uri');
+    }
 
     final response = await http
         .get(uri, headers: _baseHeaders(token: token))
@@ -162,7 +164,9 @@ class ApiClient {
       if (response.body.isEmpty) return {};
       return jsonDecode(response.body) as Map<String, dynamic>;
     }
-    debugPrint('[ApiClient] Error ${response.statusCode}: ${response.body}');
+    if (kDebugMode) {
+      debugPrint('[ApiClient] Error ${response.statusCode}: ${response.body}');
+    }
     throw ApiException(response.statusCode, _extractMessage(response.body));
   }
 

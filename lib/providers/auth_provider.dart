@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/models/user.dart';
 import '../data/repositories/auth_repository.dart';
@@ -39,8 +40,26 @@ class AuthNotifier extends Notifier<AuthState> {
   AuthRepository get _repo => ref.read(authRepositoryProvider);
 
   Future<void> _init() async {
-    final user = await _repo.getStoredUser();
-    state = user != null ? AuthAuthenticated(user) : const AuthUnauthenticated();
+    debugPrint('[AuthNotifier] _init: start');
+    try {
+      final user = await _repo.getStoredUser().timeout(
+        const Duration(seconds: 5),
+        onTimeout: () {
+          debugPrint('[AuthNotifier] _init: getStoredUser TIMED OUT');
+          return null;
+        },
+      );
+      debugPrint('[AuthNotifier] _init: got user=${user != null}');
+      state = user != null
+          ? AuthAuthenticated(user)
+          : const AuthUnauthenticated();
+    } catch (e, st) {
+      debugPrint('[AuthNotifier] _init: error $e\n$st');
+      // Stored data is corrupt or unreadable — clear it and start fresh.
+      await _repo.clearSession();
+      state = const AuthUnauthenticated();
+    }
+    debugPrint('[AuthNotifier] _init: done, state=$state');
   }
 
   Future<String?> register({

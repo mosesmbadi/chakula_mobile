@@ -22,14 +22,29 @@ class _NameScreenState extends ConsumerState<NameScreen> {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('[NameScreen] build');
     return Scaffold(
       backgroundColor: AppColors.onboardingBackground,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+              Container(
+                width: double.infinity,
+                color: Colors.red,
+                padding: const EdgeInsets.all(16),
+                child: const Text(
+                  'NAME SCREEN RENDER TEST',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
               const SizedBox(height: 16),
               Row(
                 children: [
@@ -84,7 +99,7 @@ class _NameScreenState extends ConsumerState<NameScreen> {
                   ),
                 ),
               ),
-              const Spacer(),
+              const SizedBox(height: 48),
               Padding(
                 padding: const EdgeInsets.only(bottom: 24.0),
                 child: SizedBox(
@@ -116,6 +131,7 @@ class _NameScreenState extends ConsumerState<NameScreen> {
                 ),
               ),
             ],
+            ),
           ),
         ),
       ),
