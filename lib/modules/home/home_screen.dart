@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import '../../core/app_colors.dart';
 import '../../data/models/meal.dart';
 import '../../providers/auth_provider.dart';
@@ -555,88 +556,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     final recipesAsync = ref.watch(homeRecipesProvider);
 
-    Widget body;
-    switch (recipesAsync) {
-      case AsyncLoading():
-        body = const Padding(
-          padding: EdgeInsets.symmetric(vertical: 16),
-          child: Center(child: CircularProgressIndicator()),
-        );
-      case AsyncError():
-        body = Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          child: Text(
-            'Could not load recipes',
-            style: GoogleFonts.inter(
-              fontSize: 14,
-              color: AppColors.textSecondary,
-            ),
-          ),
-        );
-      case AsyncData(:final value) when value.isEmpty:
-        body = Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          child: Text(
-            'No recipes yet. Be the first to add one!',
-            style: GoogleFonts.inter(
-              fontSize: 14,
-              color: AppColors.textSecondary,
-            ),
-          ),
-        );
-      case AsyncData(:final value):
-        body = Column(
-          children: value
-              .map(
-                (recipe) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: GestureDetector(
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const RecipesScreen()),
-                    ),
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: Colors.black.withValues(alpha: 0.05),
-                        ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            recipe.title,
-                            style: GoogleFonts.inter(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            recipe.instructions,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.inter(
-                              fontSize: 13,
-                              color: AppColors.textSecondary,
-                              height: 1.5,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              )
-              .toList(),
-        );
-      default:
-        body = const SizedBox.shrink();
-    }
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -667,7 +586,107 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ],
         ),
         const SizedBox(height: 16),
-        body,
+        recipesAsync.when(
+          loading: () => Skeletonizer(
+            child: Column(
+              children: List.generate(
+                2,
+                (_) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Recipe Title Placeholder',
+                            style: GoogleFonts.inter(
+                                fontSize: 15, fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 6),
+                        Text('Loading recipe instructions and details...',
+                            style: GoogleFonts.inter(fontSize: 13)),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          error: (error, _) => Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Text(
+              'Could not load recipes',
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ),
+          data: (value) => value.isEmpty
+              ? Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  child: Text(
+                    'No recipes yet. Be the first to add one!',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                )
+              : Column(
+                  children: value
+                      .map(
+                        (recipe) => Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: GestureDetector(
+                            onTap: () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                  builder: (_) => const RecipesScreen()),
+                            ),
+                            child: Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: Colors.black.withValues(alpha: 0.05),
+                                ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    recipe.title,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    recipe.instructions,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 13,
+                                      color: AppColors.textSecondary,
+                                      height: 1.5,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      )
+                      .toList(),
+                ),
+        ),
       ],
     );
   }
@@ -838,15 +857,77 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildFeaturedCardSkeleton() {
-    return Container(
-      width: double.infinity,
-      height: 240,
-      decoration: BoxDecoration(
-        color: AppColors.accent.withValues(alpha: 0.4),
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: const Center(
-        child: CircularProgressIndicator(color: Colors.white),
+    return Skeletonizer(
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: AppColors.accent,
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'BREAKFAST · 7:00 AM',
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    'KSh 000',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Meal Name Placeholder',
+              style: GoogleFonts.inter(
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Location · Kenya',
+              style: GoogleFonts.inter(
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Center(
+                child: Text('Accept this meal'),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -871,13 +952,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildSmallCardSkeletons() {
-    return ListView(
-      scrollDirection: Axis.horizontal,
-      children: [
-        _buildSmallMealCard('...', '...', AppColors.accent),
-        const SizedBox(width: 12),
-        _buildSmallMealCard('...', '...', AppColors.protein),
-      ],
+    return Skeletonizer(
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        physics: const NeverScrollableScrollPhysics(),
+        children: [
+          _buildSmallMealCard('Meal Name', 'KSh 000', AppColors.accent),
+          const SizedBox(width: 12),
+          _buildSmallMealCard('Meal Name', 'KSh 000', AppColors.protein),
+          const SizedBox(width: 12),
+          _buildSmallMealCard('Meal Name', 'KSh 000', AppColors.accent),
+        ],
+      ),
     );
   }
 

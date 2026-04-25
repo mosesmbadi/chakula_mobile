@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'core/app_colors.dart';
 import 'data/local/isar_service.dart';
 import 'providers/auth_provider.dart';
@@ -88,7 +89,18 @@ class HomeWrapper extends ConsumerWidget {
     if (authState is AuthInitializing) {
       return const Scaffold(
         backgroundColor: Color(0xFF2C1207),
-        body: Center(child: CircularProgressIndicator(color: Colors.white)),
+        body: Skeletonizer(
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircleAvatar(radius: 40),
+                SizedBox(height: 24),
+                Text('Chakula Loading...'),
+              ],
+            ),
+          ),
+        ),
       );
     }
 

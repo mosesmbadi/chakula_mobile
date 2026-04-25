@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import '../../core/app_colors.dart';
 import '../../data/models/recipe.dart';
 import '../../providers/recipes_provider.dart';
@@ -58,11 +59,31 @@ class _RecipesScreenState extends ConsumerState<RecipesScreen> {
         ),
       ),
       body: recipesAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => Skeletonizer(
+          child: ListView.builder(
+            padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
+            itemCount: 5,
+            itemBuilder: (_, i) => Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: _RecipeCard(
+                recipe: Recipe(
+                  id: '',
+                  title: 'Recipe Title Placeholder',
+                  instructions: 'Loading recipe instructions and details...',
+                  createdBy: '',
+                  createdAt: DateTime.now(),
+                ),
+              ),
+            ),
+          ),
+        ),
         error: (e, _) => Center(
           child: Text(
             'Could not load recipes',
-            style: GoogleFonts.inter(fontSize: 15, color: AppColors.textSecondary),
+            style: GoogleFonts.inter(
+              fontSize: 15,
+              color: AppColors.textSecondary,
+            ),
           ),
         ),
         data: (state) {
@@ -70,22 +91,33 @@ class _RecipesScreenState extends ConsumerState<RecipesScreen> {
             return Center(
               child: Text(
                 'No recipes yet',
-                style: GoogleFonts.inter(fontSize: 16, color: AppColors.textSecondary),
+                style: GoogleFonts.inter(
+                  fontSize: 16,
+                  color: AppColors.textSecondary,
+                ),
               ),
             );
           }
           return ListView.builder(
             controller: _scrollController,
             padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
-            itemCount: state.recipes.length + 1,
+            itemCount: state.recipes.length + (state.isLoadingMore ? 1 : 0),
             itemBuilder: (_, i) {
               if (i == state.recipes.length) {
-                return state.isLoadingMore
-                    ? const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 24),
-                        child: Center(child: CircularProgressIndicator()),
-                      )
-                    : const SizedBox(height: 16);
+                return Skeletonizer(
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: _RecipeCard(
+                      recipe: Recipe(
+                        id: '',
+                        title: 'Recipe Title',
+                        instructions: 'Loading...',
+                        createdBy: '',
+                        createdAt: DateTime.now(),
+                      ),
+                    ),
+                  ),
+                );
               }
               return Padding(
                 padding: const EdgeInsets.only(bottom: 16),

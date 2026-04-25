@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import '../../core/app_colors.dart';
 import '../../data/models/user.dart';
 import '../../providers/auth_provider.dart';
@@ -17,7 +18,19 @@ class ProfileScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: switch (authState) {
-        AuthInitializing() => const Center(child: CircularProgressIndicator()),
+        AuthInitializing() => Skeletonizer(
+          child: _buildProfile(
+            context,
+            ref,
+            const User(
+              id: '',
+              name: 'User Name Placeholder',
+              email: 'user@example.com',
+              dietaryGoals: ['Goal 1', 'Goal 2'],
+              dailyBudget: 0,
+            ),
+          ),
+        ),
         AuthAuthenticated(:final user) => _buildProfile(context, ref, user),
         AuthUnauthenticated() => _buildAuthPrompt(context),
       },

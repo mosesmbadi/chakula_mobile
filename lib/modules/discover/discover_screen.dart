@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import '../../core/app_colors.dart';
 import '../../core/counties_data.dart';
 import '../../data/models/meal_history_item.dart';
@@ -198,9 +199,22 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
                   delegate: SliverChildBuilderDelegate((context, index) {
                     if (index == historyState.meals.length) {
                       return historyState.isLoadingMore
-                          ? const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 24),
-                              child: Center(child: CircularProgressIndicator()),
+                          ? Skeletonizer(
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16),
+                                child: _buildMealCard(
+                                  MealHistoryItem(
+                                    id: '',
+                                    mealName: 'Meal Name',
+                                    cost: 0,
+                                    currency: 'KES',
+                                    upvotes: 0,
+                                    downvotes: 0,
+                                    eatenAt: DateTime.now(),
+                                  ),
+                                ),
+                              ),
                             )
                           : const SizedBox(height: 24);
                     }
@@ -212,8 +226,29 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
                 ),
               );
             },
-            loading: () => const SliverFillRemaining(
-              child: Center(child: CircularProgressIndicator()),
+            loading: () => SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              sliver: Skeletonizer.sliver(
+                child: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) => Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: _buildMealCard(
+                        MealHistoryItem(
+                          id: '',
+                          mealName: 'Meal Name Placeholder',
+                          cost: 0,
+                          currency: 'KES',
+                          upvotes: 0,
+                          downvotes: 0,
+                          eatenAt: DateTime.now(),
+                        ),
+                      ),
+                    ),
+                    childCount: 5,
+                  ),
+                ),
+              ),
             ),
             error: (error, _) => SliverFillRemaining(
               child: Center(
