@@ -24,6 +24,15 @@ lib/
 ## How to run:
 flutter pub get
 flutter run --flavor development
-flutter run --flavor development --dart-define=BACKEND_URL=https://chakula-api.somastories.app/api
+flutter run --flavor development --dart-define=BACKEND_URL=https://api.chakula.app/api
 
 flutter run --flavor development --dart-define=BACKEND_URL=http://192.168.100.46:3000/api
+
+## How to build .aab file for PlayStore:
+flutter clean && flutter pub get
+
+flutter build appbundle --flavor production --dart-define=BACKEND_URL=https://api.chakula.app/api
+
+Test before publishing: flutter install --flavor production  
+
+

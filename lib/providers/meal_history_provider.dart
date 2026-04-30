@@ -3,6 +3,7 @@ import '../data/models/meal_history_item.dart';
 import '../data/repositories/meal_history_repository.dart';
 import '../providers/auth_provider.dart';
 import '../providers/meal_history_filter_provider.dart';
+import '../providers/onboarding_provider.dart';
 
 class MealHistoryState {
   final List<MealHistoryItem> meals;
@@ -33,22 +34,36 @@ class MealHistoryState {
 }
 
 final mealHistoryProvider =
-    AsyncNotifierProvider.autoDispose<MealHistoryNotifier, MealHistoryState>(
+    AsyncNotifierProvider<MealHistoryNotifier, MealHistoryState>(
       MealHistoryNotifier.new,
     );
 
-class MealHistoryNotifier extends AutoDisposeAsyncNotifier<MealHistoryState> {
+class MealHistoryNotifier extends AsyncNotifier<MealHistoryState> {
   static const _limit = 20;
+
+  bool get _isAuthenticated => ref.read(authProvider) is AuthAuthenticated;
 
   @override
   Future<MealHistoryState> build() async {
-    // Watching the filter provider means this rebuilds automatically
-    // whenever the user changes region or sub_region — no manual refresh needed.
     final filter = ref.watch(mealHistoryFilterProvider);
+    final isar = ref.read(isarServiceProvider);
+
+    // Show cached data immediately so the screen is not blank while the API loads.
+    final cached = await isar.getCachedMealHistory(
+      region: filter.region,
+      subRegion: filter.subRegion,
+      limit: _limit,
+    );
+    if (cached.isNotEmpty) {
+      state = AsyncData(MealHistoryState(
+        meals: cached,
+        page: 1,
+        hasMore: cached.length >= _limit,
+      ));
+    }
+
     return _fetch(page: 1, region: filter.region, subRegion: filter.subRegion);
   }
-
-  bool get _isAuthenticated => ref.read(authProvider) is AuthAuthenticated;
 
   Future<MealHistoryState> _fetch({
     required int page,
@@ -64,6 +79,15 @@ class MealHistoryNotifier extends AutoDisposeAsyncNotifier<MealHistoryState> {
           limit: _limit,
           authenticated: _isAuthenticated,
         );
+
+    // Upsert fresh page-1 results; clear stale items first so removed meals
+    // don't linger in the cache across sessions.
+    if (page == 1 && meals.isNotEmpty) {
+      final isar = ref.read(isarServiceProvider);
+      await isar.clearMealHistoryCache();
+      await isar.cacheMealHistory(meals);
+    }
+
     return MealHistoryState(
       meals: meals,
       page: page,
@@ -80,19 +104,21 @@ class MealHistoryNotifier extends AutoDisposeAsyncNotifier<MealHistoryState> {
 
     try {
       final filter = ref.read(mealHistoryFilterProvider);
-      final region = filter.region;
-      final subRegion = filter.subRegion;
-
       final nextPage = current.page + 1;
       final more = await ref
           .read(mealHistoryRepositoryProvider)
           .fetchMealHistory(
-            region: region,
-            subRegion: subRegion,
+            region: filter.region,
+            subRegion: filter.subRegion,
             page: nextPage,
             limit: _limit,
             authenticated: _isAuthenticated,
           );
+
+      // Persist additional pages so returning users see more content instantly.
+      if (more.isNotEmpty) {
+        await ref.read(isarServiceProvider).cacheMealHistory(more);
+      }
 
       state = AsyncData(
         current.copyWith(
@@ -169,7 +195,8 @@ class MealHistoryNotifier extends AutoDisposeAsyncNotifier<MealHistoryState> {
           recipeInstructions: recipeInstructions,
           imagePath: imagePath,
         );
-    // Refresh the feed so the new entry appears.
+    // Clear stale cache so the new entry appears on next load.
+    await ref.read(isarServiceProvider).clearMealHistoryCache();
     ref.invalidateSelf();
   }
 }

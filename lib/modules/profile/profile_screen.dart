@@ -7,6 +7,9 @@ import '../../data/models/user.dart';
 import '../../providers/auth_provider.dart';
 import '../auth/login_screen.dart';
 import '../auth/register_screen.dart';
+import 'notifications_screen.dart';
+import 'privacy_screen.dart';
+import 'help_support_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -154,9 +157,33 @@ class ProfileScreen extends ConsumerWidget {
             const SizedBox(height: 32),
             _buildSectionTitle('Settings'),
             const SizedBox(height: 16),
-            _buildSettingsItem(Icons.notifications_none, 'Notifications'),
-            _buildSettingsItem(Icons.lock_outline, 'Privacy'),
-            _buildSettingsItem(Icons.help_outline, 'Help & Support'),
+            _buildSettingsItem(
+              Icons.notifications_none,
+              'Notifications',
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const NotificationsScreen(),
+                ),
+              ),
+            ),
+            _buildSettingsItem(
+              Icons.lock_outline,
+              'Privacy',
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const PrivacyScreen(),
+                ),
+              ),
+            ),
+            _buildSettingsItem(
+              Icons.help_outline,
+              'Help & Support',
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const HelpSupportScreen(),
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -245,21 +272,29 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSettingsItem(IconData icon, String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12.0),
-      child: Row(
-        children: [
-          Icon(icon, color: AppColors.textSecondary),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Text(
-              title,
-              style: GoogleFonts.inter(fontSize: 16, color: AppColors.textPrimary),
+  Widget _buildSettingsItem(IconData icon, String title, {VoidCallback? onTap}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12.0),
+        child: Row(
+          children: [
+            Icon(icon, color: AppColors.textSecondary),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                title,
+                style: GoogleFonts.inter(fontSize: 16, color: AppColors.textPrimary),
+              ),
             ),
-          ),
-          Icon(Icons.chevron_right, color: AppColors.textSecondary, size: 20),
-        ],
+            Icon(
+              Icons.chevron_right,
+              color: onTap != null ? AppColors.primary : AppColors.textSecondary,
+              size: 20,
+            ),
+          ],
+        ),
       ),
     );
   }

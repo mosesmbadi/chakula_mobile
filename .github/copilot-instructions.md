@@ -71,7 +71,7 @@ flutter build apk --flavor development --release
 ### Backend Configuration
 
 - **Development**: `http://127.0.0.1:3000` (local emulator)
-- **Production**: `https://chakula-api.somastories.app`
+- **Production**: `https://api.chakula.app`
 - **Custom**: Pass `--dart-define=BACKEND_URL=...` at runtime
 
 Backend URLs are defined in `lib/core/app_config.dart` and selected based on build flavor and `kReleaseMode`.

@@ -1,3 +1,4 @@
+// Gives VS code the mobile color theme
 {
     "workbench.colorCustomizations": {
         "activityBar.activeBackground": "#fbed80",

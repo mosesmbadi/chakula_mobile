@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 class AppConfig {
-  static const String _productionApiUrl = 'https://chakula-api.somastories.app';
+  static const String _productionApiUrl = 'https://api.chakula.app';
   static const String _developmentApiUrl = 'http://10.0.2.2:3000';
 
   static const String _customBackendUrl = String.fromEnvironment(

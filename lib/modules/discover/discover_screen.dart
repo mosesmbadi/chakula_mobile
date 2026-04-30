@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import '../../core/app_colors.dart';
-import '../../core/counties_data.dart';
 import '../../data/models/meal_history_item.dart';
 import '../../providers/meal_history_filter_provider.dart';
 import '../../providers/meal_history_provider.dart';
@@ -149,20 +148,6 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
                                         )
                                         .state = filter.copyWith(
                                       clearRegion: true,
-                                    ),
-                              ),
-                            ],
-                            if (filter.subRegion != null) ...[
-                              const SizedBox(width: 8),
-                              _buildActiveChip(
-                                filter.subRegion!,
-                                onRemove: () =>
-                                    ref
-                                        .read(
-                                          mealHistoryFilterProvider.notifier,
-                                        )
-                                        .state = filter.copyWith(
-                                      clearSubRegion: true,
                                     ),
                               ),
                             ],
@@ -400,10 +385,8 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
   Widget _buildMealCard(MealHistoryItem meal) {
     final date = meal.eatenAt;
     final dateLabel = '${date.day}/${date.month}/${date.year}';
-    final location = [
-      meal.subRegion,
-      meal.region,
-    ].where((s) => s != null && s.isNotEmpty).join(', ');
+    final hasRecipe =
+        meal.recipeInstructions != null && meal.recipeInstructions!.isNotEmpty;
 
     return Container(
       width: double.infinity,
@@ -468,22 +451,6 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
                 ),
                 const SizedBox(width: 12),
               ],
-              if (location.isNotEmpty) ...[
-                Icon(
-                  Icons.location_on_outlined,
-                  size: 14,
-                  color: AppColors.textSecondary,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  location,
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(width: 12),
-              ],
               Icon(Icons.access_time, size: 14, color: AppColors.textSecondary),
               const SizedBox(width: 4),
               Text(
@@ -534,27 +501,31 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
                 ),
               ),
               GestureDetector(
-                onTap: () => showModalBottomSheet<void>(
-                  context: context,
-                  isScrollControlled: true,
-                  backgroundColor: Colors.white,
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(24),
-                    ),
-                  ),
-                  builder: (_) => _RecipeSheet(
-                    mealName: meal.mealName,
-                    recipeTitle: meal.recipeTitle,
-                    recipeInstructions: meal.recipeInstructions,
-                  ),
-                ),
+                onTap: hasRecipe
+                    ? () => showModalBottomSheet<void>(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.white,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(24),
+                            ),
+                          ),
+                          builder: (_) => _RecipeSheet(
+                            mealName: meal.mealName,
+                            recipeTitle: meal.recipeTitle,
+                            recipeInstructions: meal.recipeInstructions,
+                          ),
+                        )
+                    : null,
                 child: Row(
                   children: [
                     Icon(
                       Icons.menu_book_outlined,
                       size: 16,
-                      color: AppColors.accent,
+                      color: hasRecipe
+                          ? AppColors.accent
+                          : AppColors.textSecondary.withValues(alpha: 0.4),
                     ),
                     const SizedBox(width: 4),
                     Text(
@@ -562,7 +533,9 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
                       style: GoogleFonts.inter(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.accent,
+                        color: hasRecipe
+                            ? AppColors.accent
+                            : AppColors.textSecondary.withValues(alpha: 0.4),
                       ),
                     ),
                   ],
@@ -600,24 +573,19 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
   };
 
   String? _selectedRegion;
-  String? _selectedSubRegion;
 
   @override
   void initState() {
     super.initState();
-    final filter = ref.read(mealHistoryFilterProvider);
-    _selectedRegion = filter.region;
-    _selectedSubRegion = filter.subRegion;
+    _selectedRegion = ref.read(mealHistoryFilterProvider).region;
   }
-
-  List<String> get _counties => CountiesData.getCountyNames();
 
   @override
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
-      initialChildSize: 0.75,
-      minChildSize: 0.5,
-      maxChildSize: 0.95,
+      initialChildSize: 0.6,
+      minChildSize: 0.4,
+      maxChildSize: 0.9,
       expand: false,
       builder: (_, scrollCtrl) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -636,10 +604,7 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
                   ),
                 ),
                 TextButton(
-                  onPressed: () => setState(() {
-                    _selectedRegion = null;
-                    _selectedSubRegion = null;
-                  }),
+                  onPressed: () => setState(() => _selectedRegion = null),
                   child: Text(
                     'Clear all',
                     style: GoogleFonts.inter(
@@ -671,10 +636,9 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
               children: _countries.map((country) {
                 final isSelected = _selectedRegion == country;
                 return GestureDetector(
-                  onTap: () => setState(() {
-                    _selectedRegion = isSelected ? null : country;
-                    _selectedSubRegion = null;
-                  }),
+                  onTap: () => setState(
+                    () => _selectedRegion = isSelected ? null : country,
+                  ),
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
@@ -704,55 +668,7 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
               }).toList(),
             ),
           ),
-          if (_selectedRegion == 'kenya') ...[
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 20, 24, 8),
-              child: Text(
-                'COUNTY',
-                style: GoogleFonts.inter(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textSecondary,
-                  letterSpacing: 1.2,
-                ),
-              ),
-            ),
-            Expanded(
-              child: ListView.builder(
-                controller: scrollCtrl,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: _counties.length,
-                itemBuilder: (_, i) {
-                  final county = _counties[i];
-                  final isSelected = _selectedSubRegion == county;
-                  return ListTile(
-                    title: Text(
-                      county,
-                      style: GoogleFonts.inter(
-                        fontSize: 15,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    trailing: isSelected
-                        ? Icon(Icons.check_circle, color: AppColors.accent)
-                        : Icon(
-                            Icons.circle_outlined,
-                            color: Colors.black.withValues(alpha: 0.15),
-                          ),
-                    onTap: () => setState(
-                      () => _selectedSubRegion = isSelected ? null : county,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    selected: isSelected,
-                    selectedTileColor: AppColors.accent.withValues(alpha: 0.05),
-                  );
-                },
-              ),
-            ),
-          ] else
-            const Spacer(),
+          const Spacer(),
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
             child: SizedBox(
@@ -760,12 +676,8 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
               height: 56,
               child: ElevatedButton(
                 onPressed: () {
-                  ref
-                      .read(mealHistoryFilterProvider.notifier)
-                      .state = MealHistoryFilter(
-                    region: _selectedRegion,
-                    subRegion: _selectedSubRegion,
-                  );
+                  ref.read(mealHistoryFilterProvider.notifier).state =
+                      MealHistoryFilter(region: _selectedRegion);
                   Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(
